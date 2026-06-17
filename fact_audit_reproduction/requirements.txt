@@ -1,0 +1,5 @@
+# Offline smoke tests use only the Python standard library.
+#
+# Optional API/local-model providers:
+# transformers==4.39.1
+# torch

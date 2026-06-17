@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FACT-AUDIT+RAG output contract",
+  "type": "object",
+  "required": [
+    "claim_id",
+    "claim",
+    "test_mode",
+    "retrieved_evidence",
+    "rag_verdict",
+    "rag_justification",
+    "rag_score",
+    "baseline_result_ref"
+  ],
+  "properties": {
+    "claim_id": { "type": "string" },
+    "claim": { "type": "string" },
+    "test_mode": {
+      "type": "string",
+      "enum": ["claim", "evidence", "wisdom_of_crowds"]
+    },
+    "retrieved_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "source"],
+        "properties": {
+          "text": { "type": "string" },
+          "source": { "type": "string" },
+          "score": { "type": "number" }
+        }
+      }
+    },
+    "rag_verdict": {
+      "type": "string",
+      "enum": ["Factual", "Non-Factual", "Not Enough Information"]
+    },
+    "rag_justification": { "type": "string" },
+    "rag_score": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "baseline_result_ref": {
+      "type": "string",
+      "description": "claim_id or path#claim_id reference to the matching baseline output row"
+    }
+  },
+  "additionalProperties": true
+}

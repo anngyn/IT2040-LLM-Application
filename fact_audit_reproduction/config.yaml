@@ -1,0 +1,15 @@
+llm:
+  provider: mock
+  model: mock-fact-audit-heuristic
+  base_url:
+  temperature: 0.0
+  timeout_seconds: 60
+  model_path:
+
+paths:
+  input_file: data/claim_sets/claim_set_30.jsonl
+  baseline_results_jsonl: outputs/baseline_results.jsonl
+  scores_csv: outputs/scores.csv
+
+run:
+  limit: 30

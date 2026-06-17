@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FACT-AUDIT baseline output",
+  "type": "object",
+  "required": [
+    "claim_id",
+    "claim",
+    "key_point",
+    "auxiliary_info",
+    "test_mode",
+    "ground_truth",
+    "gold_verdict",
+    "verdict",
+    "justification",
+    "score",
+    "latency",
+    "cost",
+    "baseline_verdict",
+    "baseline_justification",
+    "baseline_score",
+    "is_verdict_correct",
+    "is_justification_flawed",
+    "latency_seconds",
+    "cost_usd",
+    "provider",
+    "model"
+  ],
+  "properties": {
+    "claim_id": { "type": "string" },
+    "claim": { "type": "string" },
+    "key_point": { "type": "string" },
+    "auxiliary_info": { "type": "string" },
+    "test_mode": {
+      "type": "string",
+      "enum": ["claim", "evidence", "wisdom_of_crowds"]
+    },
+    "source_dataset": { "type": "string" },
+    "ground_truth": { "type": "string" },
+    "gold_verdict": {
+      "type": "string",
+      "enum": ["Factual", "Non-Factual", "Not Enough Information"]
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["Factual", "Non-Factual", "Not Enough Information"],
+      "description": "Alias of baseline_verdict for the assignment CSV/JSONL contract."
+    },
+    "justification": {
+      "type": "string",
+      "description": "Alias of baseline_justification for the assignment CSV/JSONL contract."
+    },
+    "score": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Alias of baseline_score for the assignment CSV/JSONL contract."
+    },
+    "latency": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Alias of latency_seconds for the assignment CSV/JSONL contract."
+    },
+    "cost": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Alias of cost_usd for the assignment CSV/JSONL contract."
+    },
+    "baseline_verdict": {
+      "type": "string",
+      "enum": ["Factual", "Non-Factual", "Not Enough Information"]
+    },
+    "baseline_justification": { "type": "string" },
+    "baseline_score": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "is_verdict_correct": { "type": "boolean" },
+    "is_justification_flawed": { "type": "boolean" },
+    "evaluator_comment": { "type": "string" },
+    "latency_seconds": { "type": "number", "minimum": 0 },
+    "cost_usd": { "type": "number", "minimum": 0 },
+    "provider": { "type": "string" },
+    "model": { "type": "string" },
+    "raw_response": { "type": "string" }
+  },
+  "additionalProperties": true
+}
