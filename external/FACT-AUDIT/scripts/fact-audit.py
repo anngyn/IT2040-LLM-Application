@@ -2,7 +2,6 @@ import requests
 import json
 import os
 import random
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from urllib.parse import urlparse, unquote
 from bs4 import BeautifulSoup
 import re
@@ -10,29 +9,42 @@ import argparse
 import os
 import time
 
+# --- GPU detection ---
+HAS_GPU = False
+try:
+    import torch
+    HAS_GPU = torch.cuda.is_available()
+except ImportError:
+    pass
+
+if HAS_GPU:
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
 # Get the value of HF_HUB_CACHE
 hf_hub_cache_path = os.getenv('HF_HUB_CACHE')
-
-# Check if the variable is set
 if hf_hub_cache_path:
     print(f"HF_HUB_CACHE is set to: {hf_hub_cache_path}")
 else:
     print("HF_HUB_CACHE is not set.")
 
-# TODO change the api key and url
-
-API_KEY_gpt = 'sk-xxxxxx'
+# --- API config (read from env, fallback to placeholder) ---
+API_KEY_gpt = os.getenv('OPENAI_API_KEY', 'sk-xxxxxx')
 HEADERS_gpt = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {API_KEY_gpt}"
 }
-API_URL_gpt = 'https://api.openai.com/v1/chat/completions' #"<API URL>"
+API_URL_gpt = os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions')
 
+# --- LLaMA API fallback config (used when no GPU) ---
+# Set LLAMA_BASE_URL to your third-party OpenAI-compatible endpoint (e.g. https://your-provider.com/v1)
+LLAMA_API_KEY = os.getenv('LLAMA_API_KEY', API_KEY_gpt)
+LLAMA_BASE_URL = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
+LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama-3.3-70b-versatile')
 
-device = 'cuda:0'
+device = 'cuda:0' if HAS_GPU else 'cpu'
 
-# TODO update your model path, we implement the inference function for llama2 (llama2_generate) and llama3 (llama3_generate)
-model_path = 'meta-llama/Llama-2-13b-chat-hf' #'<MODEL PATH>'
+# TODO update your model path (only used when GPU is available)
+model_path = os.getenv('LOCAL_MODEL_PATH', 'meta-llama/Llama-2-13b-chat-hf')
 
 
 def gpt4o_turbo_generate(text, temp=None, presence_penalty=None):
@@ -150,24 +162,58 @@ def get_gpt4_score(question, answer, ref_ans, key_point):
     score_res = gpt4omini_turbo_generate(judge_prompt, temp=0)
     return score_res
 
-model = AutoModelForCausalLM.from_pretrained(model_path).half().eval().to(device)
-tokenizer = AutoTokenizer.from_pretrained(model_path)
+model = None
+tokenizer = None
+if HAS_GPU:
+    print(f"[GPU mode] Loading local model: {model_path}")
+    model = AutoModelForCausalLM.from_pretrained(model_path).half().eval().to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+else:
+    print(f"[API mode] No GPU detected. Using LLaMA via API: {LLAMA_BASE_URL} model={LLAMA_MODEL}")
+
+
+def _llama_api_generate(text):
+    """Call LLaMA through an OpenAI-compatible API endpoint."""
+    url = LLAMA_BASE_URL.rstrip('/') + '/chat/completions'
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {LLAMA_API_KEY}"
+    }
+    payload = json.dumps({
+        "model": LLAMA_MODEL,
+        "messages": [{"role": "user", "content": text}],
+        "temperature": 0.0,
+        "max_tokens": 1024
+    })
+    num = 10
+    while num > 0:
+        try:
+            response = requests.post(url, headers=headers, data=payload)
+            result = response.json()
+            return result['choices'][0]['message']['content'].strip()
+        except Exception as e:
+            print(f"[LLaMA API error] {e}")
+            time.sleep(5)
+            num -= 1
+    return ""
 
 
 def llama2_generate(text):
+    if not HAS_GPU:
+        return _llama_api_generate(text)
     input_text = "<s>[INST] {} [/INST]".format(text)
-    model_inputs = tokenizer(input_text, return_tensors="pt").to(device)    
-    # output = model.generate(**model_inputs, max_new_tokens=1024, do_sample=False, top_p=0.9, temperature=0.6, num_beams=1)
+    model_inputs = tokenizer(input_text, return_tensors="pt").to(device)
     output = model.generate(**model_inputs, max_new_tokens=1024, do_sample=False, num_beams=1)
     resp = tokenizer.decode(output[0], skip_special_tokens=True).split('[/INST]')[1].strip()
     return resp
 
 
 def llama3_generate(text):
+    if not HAS_GPU:
+        return _llama_api_generate(text)
     terminators = [tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|eot_id|>")]
     input_text = "<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n{}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n".format(text)
-    model_inputs = tokenizer(input_text, return_tensors="pt").to(device)    
-    # output = model.generate(**model_inputs, max_new_tokens=1024, do_sample=True, top_p=0.9, temperature=0.6, num_beams=1, eos_token_id=terminators)
+    model_inputs = tokenizer(input_text, return_tensors="pt").to(device)
     output = model.generate(**model_inputs, max_new_tokens=1024, do_sample=False, num_beams=1, eos_token_id=terminators)
     resp = tokenizer.decode(output[0][model_inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
     return resp
