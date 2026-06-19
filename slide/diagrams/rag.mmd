@@ -1,0 +1,5 @@
+flowchart LR
+  A["Claim"] --> R["Retriever<br/>(cắm trước LLM)"]
+  R --> P["Augmented Prompt<br/>claim + top-k evidence"]
+  P --> L["Target LLM"]
+  L --> V["Verdict +<br/>Justification"]
