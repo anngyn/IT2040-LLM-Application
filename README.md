@@ -1,45 +1,36 @@
 # T2040 LLM Application Workspace
 
-Repo hiện tại phục vụ đề tài:
+Repo nay tap trung vao phan FACT-AUDIT-inspired reproduction cho do an:
 
-```text
-FACT-AUDIT + FACT-AUDIT+RAG: Evidence-Augmented Adaptive Fact-Checking Audit
-```
+- `static baseline`
+- `dynamic prototype`
+- `FACT-AUDIT + RAG comparison`
 
-## Trạng Thái Repo
+## Cau Truc Chinh
 
-Repo hiện chỉ giữ phần đang dùng cho project hiện tại:
-
-- code baseline trong `fact_audit_reproduction/`;
-- repo official FACT-AUDIT trong `external/FACT-AUDIT/`;
-- dataset normalized nguồn để tạo claim set;
-- 2 file tài liệu tham chiếu: paper PDF và Excel phân công.
-
-## Cấu Trúc Chính
-
-| Đường dẫn | Tác dụng |
+| Duong dan | Tac dung |
 |---|---|
-| `fact_audit_reproduction/` | Phần code chính của Mr. Tô: baseline reproduction, smoke test, demo cache, schema cho nhóm RAG |
-| `external/FACT-AUDIT/` | Repo FACT-AUDIT official clone, giữ làm reference source gốc |
+| `fact_audit_reproduction/` | Code chinh: baseline, dynamic claim generation, notebook, schema, docs |
+| `external/FACT-AUDIT/` | Repo FACT-AUDIT official giu lam tai lieu doi chieu |
 
-## File Quan Trọng
+## File Quan Trong
 
-| File | Tác dụng |
+| File | Tac dung |
 |---|---|
-| `fact_audit_reproduction/README.md` | Hướng dẫn setup, chạy baseline, chạy cached demo |
-| `fact_audit_reproduction/config.yaml` | Cấu hình provider/model/input/output mặc định |
-| `fact_audit_reproduction/.env.example` | Mẫu file môi trường, không chứa API key thật |
-| `fact_audit_reproduction/data/source/fact_checking_normalized.jsonl` | Dataset normalized nguồn để tạo claim set |
-| `fact_audit_reproduction/source_materials/` | Chỉ còn paper PDF và Excel phân công đang dùng |
-| `fact_audit_reproduction/scripts/make_claim_set.py` | Tạo claim set 30 mẫu từ dataset local |
-| `fact_audit_reproduction/scripts/run_smoke_test.py` | Chạy smoke test 3 claims |
-| `fact_audit_reproduction/scripts/run_baseline.py` | Chạy baseline FACT-AUDIT-style trên claim set |
-| `fact_audit_reproduction/scripts/run_baseline_demo.py` | Chạy demo baseline, có chế độ dùng cache |
-| `fact_audit_reproduction/schemas/schema_baseline.json` | Schema output baseline cho Cu Ấn/RAG dùng chung |
-| `fact_audit_reproduction/schemas/schema_rag.json` | Schema output phía FACT-AUDIT+RAG |
-| `fact_audit_reproduction/docs/checklist_mr_to_code_reproduction.md` | Checklist hoàn thành C2.1-C2.8 và coverage cột Notes |
+| `fact_audit_reproduction/README.md` | Huong dan setup va chay pipeline |
+| `fact_audit_reproduction/.env.example` | Mau bien moi truong cho Gemini/OpenAI |
+| `fact_audit_reproduction/config.yaml` | Cau hinh provider, model, input, output mac dinh |
+| `fact_audit_reproduction/notebooks/run_baseline_pipeline.ipynb` | Notebook chay lai toan bo pipeline |
+| `fact_audit_reproduction/scripts/` | Cac script tao claim set, smoke test, baseline, dynamic generation |
+| `fact_audit_reproduction/schemas/` | Schema dung chung cho baseline va nhanh RAG |
+| `fact_audit_reproduction/docs/` | Checklist, ghi chu moi truong, report mock test |
 
-## Chạy Nhanh
+## Reports
+
+- [Checklist Mr. To](/Users/totien/Documents/caohoc/Ki2-2026/T2040-LLM-Application/fact_audit_reproduction/docs/checklist_mr_to_code_reproduction.md)
+- [Mock Test Report](/Users/totien/Documents/caohoc/Ki2-2026/T2040-LLM-Application/fact_audit_reproduction/docs/mock_test_report.md)
+
+## Chay Nhanh
 
 ```bash
 cd fact_audit_reproduction
@@ -49,5 +40,4 @@ python3 scripts/run_baseline.py
 python3 scripts/run_baseline_demo.py --use-cache
 ```
 
-Mặc định dùng provider `mock`, chạy offline, không cần API key.
-# IT2040-LLM-Application
+Mac dinh dung provider `mock`, chay offline, khong can API key.
