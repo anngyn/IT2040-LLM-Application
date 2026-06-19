@@ -1,36 +1,36 @@
 # T2040 LLM Application Workspace
 
-Repo nay tap trung vao phan FACT-AUDIT-inspired reproduction cho do an:
+Repo này tập trung vào phần FACT-AUDIT-inspired reproduction cho đồ án:
 
 - `static baseline`
 - `dynamic prototype`
 - `FACT-AUDIT + RAG comparison`
 
-## Cau Truc Chinh
+## Cấu Trúc Chính
 
-| Duong dan | Tac dung |
+| Đường dẫn | Tác dụng |
 |---|---|
-| `fact_audit_reproduction/` | Code chinh: baseline, dynamic claim generation, notebook, schema, docs |
-| `external/FACT-AUDIT/` | Repo FACT-AUDIT official giu lam tai lieu doi chieu |
+| `fact_audit_reproduction/` | Code chính: baseline, dynamic claim generation, notebook, schema, docs |
+| `external/FACT-AUDIT/` | Repo FACT-AUDIT official giữ làm tài liệu đối chiếu |
 
-## File Quan Trong
+## File Quan Trọng
 
-| File | Tac dung |
+| File | Tác dụng |
 |---|---|
-| `fact_audit_reproduction/README.md` | Huong dan setup va chay pipeline |
-| `fact_audit_reproduction/.env.example` | Mau bien moi truong cho Gemini/OpenAI |
-| `fact_audit_reproduction/config.yaml` | Cau hinh provider, model, input, output mac dinh |
-| `fact_audit_reproduction/notebooks/run_baseline_pipeline.ipynb` | Notebook chay lai toan bo pipeline |
-| `fact_audit_reproduction/scripts/` | Cac script tao claim set, smoke test, baseline, dynamic generation |
-| `fact_audit_reproduction/schemas/` | Schema dung chung cho baseline va nhanh RAG |
-| `fact_audit_reproduction/docs/` | Checklist, ghi chu moi truong, report mock test |
+| `fact_audit_reproduction/README.md` | Hướng dẫn setup và chạy pipeline |
+| `fact_audit_reproduction/.env.example` | Mẫu biến môi trường cho Gemini/OpenAI |
+| `fact_audit_reproduction/config.yaml` | Cấu hình provider, model, input, output mặc định |
+| `fact_audit_reproduction/notebooks/run_baseline_pipeline.ipynb` | Notebook chạy lại toàn bộ pipeline |
+| `fact_audit_reproduction/scripts/` | Các script tạo claim set, smoke test, baseline, dynamic generation |
+| `fact_audit_reproduction/schemas/` | Schema dùng chung cho baseline và nhánh RAG |
+| `fact_audit_reproduction/docs/` | Checklist, ghi chú môi trường, report mock test |
 
 ## Reports
 
 - [Checklist Mr. To](fact_audit_reproduction/docs/checklist_mr_to_code_reproduction.md)
 - [Mock Test Report](fact_audit_reproduction/docs/mock_test_report.md)
 
-## Chay Nhanh
+## Chạy Nhanh
 
 ```bash
 cd fact_audit_reproduction
@@ -40,4 +40,4 @@ python3 scripts/run_baseline.py
 python3 scripts/run_baseline_demo.py --use-cache
 ```
 
-Mac dinh dung provider `mock`, chay offline, khong can API key.
+Mặc định dùng provider `mock`, chạy offline, không cần API key.
