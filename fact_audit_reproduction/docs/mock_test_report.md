@@ -1,23 +1,23 @@
-# Report Kiem Thu Mock Baseline
+# Report Kiểm Thử Mock Baseline
 
-Ngay kiem thu: `2026-06-19`
+Ngày kiểm thử: `2026-06-19`
 
-Nguoi tong hop: `Mr. To`
+Người tổng hợp: `Mr. Tô`
 
-## Muc Dich
+## Mục Đích
 
-Report nay tong hop ket qua chay lai cac bai test o che do `mock` trong pipeline FACT-AUDIT-inspired reproduction.
+Report này tổng hợp kết quả chạy lại các bài test ở chế độ `mock` trong pipeline FACT-AUDIT-inspired reproduction.
 
-Muc tieu cua `mock test`:
+Mục tiêu của `mock test`:
 
-- Kiem tra pipeline co chay end-to-end hay khong.
-- Kiem tra format input/output JSONL va CSV co dung schema khong.
-- Kiem tra script baseline, demo, smoke test co hoat dong on dinh khong.
-- Khong dung de danh gia chat luong fact-checking thuc te cua mo hinh.
+- Kiểm tra pipeline có chạy end-to-end hay không.
+- Kiểm tra format input/output JSONL và CSV có đúng schema không.
+- Kiểm tra script baseline, demo, smoke test có hoạt động ổn định không.
+- Không dùng để đánh giá chất lượng fact-checking thực tế của mô hình.
 
-## Pham Vi Kiem Thu
+## Phạm Vi Kiểm Thử
 
-Da chay lai 3 script sau:
+Đã chạy lại 3 script sau:
 
 ```bash
 python3 fact_audit_reproduction/scripts/run_smoke_test.py
@@ -25,97 +25,97 @@ python3 fact_audit_reproduction/scripts/run_baseline_demo.py
 python3 fact_audit_reproduction/scripts/run_baseline.py
 ```
 
-Tat ca deu chay bang provider mac dinh `mock`.
+Tất cả đều chạy bằng provider mặc định `mock`.
 
-## Ket Qua
+## Kết Quả
 
-### 1. Smoke test 3 mau
+### 1. Smoke test 3 mẫu
 
 - Script: `fact_audit_reproduction/scripts/run_smoke_test.py`
 - Output:
   - `fact_audit_reproduction/outputs/smoke_test.jsonl`
   - `fact_audit_reproduction/outputs/smoke_test_scores.csv`
-- Ket qua:
-  - So mau: `3`
-  - Verdict dung: `2/3`
-  - Diem trung binh: `6.67`
+- Kết quả:
+  - Số mẫu: `3`
+  - Verdict đúng: `2/3`
+  - Điểm trung bình: `6.67`
 
-Y nghia:
+Ý nghĩa:
 
-- Xac nhan pipeline co the doc claim set, tao prompt, sinh ket qua, cham diem, va ghi file output.
-- Phu hop de smoke test nhanh sau moi lan sua code.
+- Xác nhận pipeline có thể đọc claim set, tạo prompt, sinh kết quả, chấm điểm, và ghi file output.
+- Phù hợp để smoke test nhanh sau mỗi lần sửa code.
 
-### 2. Baseline demo 5 mau
+### 2. Baseline demo 5 mẫu
 
 - Script: `fact_audit_reproduction/scripts/run_baseline_demo.py`
 - Output:
   - `fact_audit_reproduction/outputs/cached_demo/baseline_demo_results.jsonl`
   - `fact_audit_reproduction/outputs/cached_demo/demo_scores.csv`
-- Ket qua:
-  - So mau: `5`
-  - Verdict dung: `3/5`
-  - Diem trung binh: `6.20`
+- Kết quả:
+  - Số mẫu: `5`
+  - Verdict đúng: `3/5`
+  - Điểm trung bình: `6.20`
 
-Y nghia:
+Ý nghĩa:
 
-- Day la ban demo nho gon hon full baseline.
-- Phu hop de trinh bay nhanh trong nhom hoac demo tren may khong co API key.
+- Đây là bản demo nhỏ gọn hơn full baseline.
+- Phù hợp để trình bày nhanh trong nhóm hoặc demo trên máy không có API key.
 
-### 3. Full baseline 30 mau
+### 3. Full baseline 30 mẫu
 
 - Script: `fact_audit_reproduction/scripts/run_baseline.py`
 - Output:
   - `fact_audit_reproduction/outputs/baseline_results.jsonl`
   - `fact_audit_reproduction/outputs/scores.csv`
-- Ket qua:
-  - So mau: `30`
-  - Verdict dung: `9/30`
-  - Diem trung binh: `4.10`
+- Kết quả:
+  - Số mẫu: `30`
+  - Verdict đúng: `9/30`
+  - Điểm trung bình: `4.10`
 
-Y nghia:
+Ý nghĩa:
 
-- Xac nhan pipeline baseline day du van chay het 30 claims.
-- Diem thap la binh thuong vi `mock` chi la heuristic offline, khong phai LLM that.
+- Xác nhận pipeline baseline đầy đủ vẫn chạy hết 30 claims.
+- Điểm thấp là bình thường vì `mock` chỉ là heuristic offline, không phải LLM thật.
 
-## Nhan Xet Chung
+## Nhận Xét Chung
 
-- Phan `mock` hien da chay on dinh va lap lai duoc.
-- Output JSONL/CSV duoc tao thanh cong cho ca smoke test, demo, va full baseline.
-- `mock` huu ich de kiem tra code, schema, va pipeline.
-- `mock` khong nen dung de rut ra ket luan ve nang luc fact-checking cua he thong.
+- Phần `mock` hiện đã chạy ổn định và lặp lại được.
+- Output JSONL/CSV được tạo thành công cho cả smoke test, demo, và full baseline.
+- `mock` hữu ích để kiểm tra code, schema, và pipeline.
+- `mock` không nên dùng để rút ra kết luận về năng lực fact-checking của hệ thống.
 
-## Gioi Han Cua Mock Test
+## Giới Hạn Của Mock Test
 
-- Khong truy cap web hoac tri thuc dong.
-- Khong mo phong day du hanh vi cua Gemini/OpenAI/local LLM.
-- Co the dung de xac nhan code khong vo pipeline, nhung khong dung de so sanh hoc thuat.
+- Không truy cập web hoặc tri thức động.
+- Không mô phỏng đầy đủ hành vi của Gemini/OpenAI/local LLM.
+- Có thể dùng để xác nhận code không vỡ pipeline, nhưng không dùng để so sánh học thuật.
 
-## Khi Nao Nen Dung Mock
+## Khi Nào Nên Dùng Mock
 
-Nen dung `mock` khi:
+Nên dùng `mock` khi:
 
-- Muon kiem tra nhanh sau khi sua code.
-- Muon chia se cho thanh vien khac de ho chay duoc ngay.
-- Khong co API key hoac khong muon ton chi phi goi model.
+- Muốn kiểm tra nhanh sau khi sửa code.
+- Muốn chia sẻ cho thành viên khác để họ chạy được ngay.
+- Không có API key hoặc không muốn tốn chi phí gọi model.
 
-Nen dung `gemini` hoac provider that khi:
+Nên dùng `gemini` hoặc provider thật khi:
 
-- Can sinh claim dong.
-- Can ket qua gan voi tinh than cua bai bao FACT-AUDIT hon.
-- Can danh gia chat luong verdict/justification nghiem tuc hon.
+- Cần sinh claim động.
+- Cần kết quả gần với tinh thần của bài báo FACT-AUDIT hơn.
+- Cần đánh giá chất lượng verdict/justification nghiêm túc hơn.
 
-## File Lien Quan
+## File Liên Quan
 
 - `fact_audit_reproduction/scripts/run_smoke_test.py`
 - `fact_audit_reproduction/scripts/run_baseline_demo.py`
 - `fact_audit_reproduction/scripts/run_baseline.py`
 - `fact_audit_reproduction/fact_audit_baseline/llm_client.py`
 
-## Ket Luan
+## Kết Luận
 
-Tinh den ngay `2026-06-19`, phan `mock baseline` da:
+Tính đến ngày `2026-06-19`, phần `mock baseline` đã:
 
-- chay duoc,
-- ghi output dung dinh dang,
-- phu hop de demo va regression check,
-- san sang de chia se cho cac thanh vien khac trong nhom.
+- chạy được,
+- ghi output đúng định dạng,
+- phù hợp để demo và regression check,
+- sẵn sàng để chia sẻ cho các thành viên khác trong nhóm.
