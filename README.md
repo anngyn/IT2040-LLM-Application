@@ -27,8 +27,8 @@ Repo nay tap trung vao phan FACT-AUDIT-inspired reproduction cho do an:
 
 ## Reports
 
-- [Checklist Mr. To](/Users/totien/Documents/caohoc/Ki2-2026/T2040-LLM-Application/fact_audit_reproduction/docs/checklist_mr_to_code_reproduction.md)
-- [Mock Test Report](/Users/totien/Documents/caohoc/Ki2-2026/T2040-LLM-Application/fact_audit_reproduction/docs/mock_test_report.md)
+- [Checklist Mr. To](fact_audit_reproduction/docs/checklist_mr_to_code_reproduction.md)
+- [Mock Test Report](fact_audit_reproduction/docs/mock_test_report.md)
 
 ## Chay Nhanh
 
