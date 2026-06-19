@@ -13,6 +13,7 @@ Các task C2.1 đến C2.8 đã hoàn thành ở mức **baseline/demo reproduct
 - Runner mặc định dùng provider `mock` để chạy offline, ổn định khi demo.
 - Nếu muốn chất lượng fact-checking tốt hơn, đổi sang provider `openai` hoặc `transformers`.
 - Đây không phải bản tái hiện đầy đủ toàn bộ adaptive multi-agent FACT-AUDIT trong paper.
+- Repo hiện có thêm `dynamic prototype`, nhưng vẫn chưa có vòng lặp adaptive updating đầy đủ như paper.
 
 ## Checklist Theo Task
 

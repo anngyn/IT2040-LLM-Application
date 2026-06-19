@@ -12,7 +12,7 @@ from typing import Any, Dict, List
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from fact_audit_baseline.config import deep_get, load_env, load_simple_yaml
+from fact_audit_baseline.config import deep_get, load_env, load_simple_yaml, resolve_model_name
 from fact_audit_baseline.evaluator import parse_model_response, score_response
 from fact_audit_baseline.io_utils import read_jsonl, write_csv, write_jsonl
 from fact_audit_baseline.llm_client import build_client
@@ -122,7 +122,8 @@ def main() -> int:
         return 0
 
     provider = args.provider or deep_get(config, "llm", "provider", "mock")
-    model = args.model or deep_get(config, "llm", "model", "mock-fact-audit-heuristic")
+    configured_model = deep_get(config, "llm", "model", "mock-fact-audit-heuristic")
+    model = args.model or resolve_model_name(provider, configured_model)
     client = build_client(
         provider=provider,
         model=model,

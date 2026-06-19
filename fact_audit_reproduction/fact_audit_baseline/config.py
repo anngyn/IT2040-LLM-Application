@@ -73,3 +73,26 @@ def load_simple_yaml(path: str | Path | None) -> Dict[str, Dict[str, Any]]:
 
 def deep_get(config: Dict[str, Dict[str, Any]], section: str, key: str, default: Any) -> Any:
     return config.get(section, {}).get(key, default)
+
+
+def resolve_model_name(provider: str, configured_model: str | None = None) -> str:
+    """Choose a provider-appropriate model while preserving mock defaults."""
+    provider_name = (provider or "mock").strip().lower()
+    model_name = (configured_model or "").strip()
+
+    if provider_name == "gemini":
+        if model_name and model_name != "mock-fact-audit-heuristic":
+            return model_name
+        return os.getenv("GEMINI_MODEL") or os.getenv("LLM_MODEL") or "gemini-2.5-flash"
+
+    if provider_name in {"openai", "openai_compatible", "api"}:
+        if model_name and model_name != "mock-fact-audit-heuristic":
+            return model_name
+        return os.getenv("OPENAI_MODEL") or os.getenv("LLM_MODEL") or "gpt-4o-mini"
+
+    if provider_name in {"transformers", "local"}:
+        if model_name and model_name != "mock-fact-audit-heuristic":
+            return model_name
+        return os.getenv("LOCAL_MODEL_PATH") or os.getenv("LLM_MODEL") or "distilgpt2"
+
+    return model_name or "mock-fact-audit-heuristic"
