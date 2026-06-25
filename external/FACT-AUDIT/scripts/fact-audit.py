@@ -8,14 +8,25 @@ import re
 import argparse
 import os
 import time
+from datetime import datetime
+
+_step_counter = {'gpt4o': 0, 'gpt4o_mini': 0, 'llama': 0, 'seed': 0, 'search': 0}
+
+def _ts():
+    return datetime.now().strftime('%H:%M:%S')
+
+def _log(tag, msg):
+    print(f"[{_ts()}][{tag}] {msg}")
 
 # --- GPU detection ---
+# Set FORCE_API_MODE=1 to skip local model and use LLaMA API regardless of GPU
 HAS_GPU = False
-try:
-    import torch
-    HAS_GPU = torch.cuda.is_available()
-except ImportError:
-    pass
+if not os.getenv('FORCE_API_MODE'):
+    try:
+        import torch
+        HAS_GPU = torch.cuda.is_available()
+    except ImportError:
+        pass
 
 if HAS_GPU:
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -27,16 +38,28 @@ if hf_hub_cache_path:
 else:
     print("HF_HUB_CACHE is not set.")
 
-# --- API config (read from env, fallback to placeholder) ---
-API_KEY_gpt = os.getenv('OPENAI_API_KEY', 'sk-xxxxxx')
+# --- API config ---
+# GPT_PROVIDER=openai → use OPENAI_API_KEY directly
+# GPT_PROVIDER=third-party → use LLAMA_API_KEY + LLAMA_BASE_URL for GPT calls too
+GPT_PROVIDER = os.getenv('GPT_PROVIDER', 'third-party')
+
+if GPT_PROVIDER == 'openai':
+    API_KEY_gpt = os.getenv('OPENAI_API_KEY', 'sk-xxxxxx')
+    API_URL_gpt = os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions')
+else:
+    API_KEY_gpt = os.getenv('LLAMA_API_KEY', os.getenv('OPENAI_API_KEY', 'sk-xxxxxx'))
+    _base = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
+    API_URL_gpt = _base.rstrip('/') + '/chat/completions'
+
 HEADERS_gpt = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {API_KEY_gpt}"
 }
-API_URL_gpt = os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions')
+
+GPT_MODEL = os.getenv('GPT_MODEL', 'gx/gpt-5.5')
+GPT_JUDGE_MODEL = os.getenv('GPT_JUDGE_MODEL', GPT_MODEL)
 
 # --- LLaMA API fallback config (used when no GPU) ---
-# Set LLAMA_BASE_URL to your third-party OpenAI-compatible endpoint (e.g. https://your-provider.com/v1)
 LLAMA_API_KEY = os.getenv('LLAMA_API_KEY', API_KEY_gpt)
 LLAMA_BASE_URL = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
 LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama-3.3-70b-versatile')
@@ -48,55 +71,49 @@ model_path = os.getenv('LOCAL_MODEL_PATH', 'meta-llama/Llama-2-13b-chat-hf')
 
 
 def gpt4o_turbo_generate(text, temp=None, presence_penalty=None):
-    # print(text)
+    _step_counter['gpt4o'] += 1
     num = 50
     res = ""
-    messages = [{"role": "user", "content": text}]
     while num > 0 and len(res)==0:
         try:
+            payload = {"model": GPT_MODEL, "messages": [{"role": "user", "content": text}]}
             if temp:
-                data = json.dumps({"model": "gpt-4o-2024-05-13", "messages": 
-                    [{"role": "user", "content": text}],
-                    'temperature': temp
-                })
-            else:
-                data = json.dumps({"model": "gpt-4o-2024-05-13", "messages": 
-                    [{"role": "user", "content": text}]
-                })
+                payload['temperature'] = temp
+            data = json.dumps(payload)
             response = requests.post(API_URL_gpt, headers=HEADERS_gpt, data=data)
             response_json = response.json()
+            if 'choices' not in response_json:
+                _log('GPT', f"API error (status={response.status_code}): {response_json}")
+                raise KeyError('choices')
             res = response_json['choices'][0]['message']['content']
         except Exception as e:
-            print(e)
+            _log('GPT', f"retry {50-num+1}/50 - {e}")
             time.sleep(10)
             num -= 1
-    
+
     return res
 
 def gpt4omini_turbo_generate(text, temp=None, presence_penalty=None):
-    # print(text)
+    _step_counter['gpt4o_mini'] += 1
     num = 50
     res = ""
-    messages = [{"role": "user", "content": text}]
     while num > 0 and len(res)==0:
         try:
+            payload = {"model": GPT_JUDGE_MODEL, "messages": [{"role": "user", "content": text}]}
             if temp:
-                data = json.dumps({"model": "gpt-4o-mini-2024-07-18", "messages": 
-                    [{"role": "user", "content": text}],
-                    'temperature': temp
-                })
-            else:
-                data = json.dumps({"model": "gpt-4o-mini-2024-07-18", "messages": 
-                    [{"role": "user", "content": text}]
-                })
+                payload['temperature'] = temp
+            data = json.dumps(payload)
             response = requests.post(API_URL_gpt, headers=HEADERS_gpt, data=data)
             response_json = response.json()
+            if 'choices' not in response_json:
+                _log('GPT-JUDGE', f"API error (status={response.status_code}): {response_json}")
+                raise KeyError('choices')
             res = response_json['choices'][0]['message']['content']
         except Exception as e:
-            print(e)
+            _log('GPT-JUDGE', f"retry {50-num+1}/50 - {e}")
             time.sleep(10)
             num -= 1
-    
+
     return res
 
 
@@ -129,26 +146,24 @@ def find_dict(answer):
 
 
 def gpt4o_generate(text, temp=1.0):  # model   gpt-4
-    # print(text)
+    _step_counter['gpt4o'] += 1
     num = 50
     res = ""
     while num > 0 and len(res)==0:
         try:
+            payload = {"model": GPT_MODEL, "messages": [{"role": "user", "content": text}]}
             if temp:
-                data = json.dumps({"model": "gpt-4o-2024-05-13", "messages": 
-                    [{"role": "user", "content": text}],
-                    'temperature': temp
-                })
-            else:
-                data = json.dumps({"model": "gpt-4o-2024-05-13", "messages": 
-                    [{"role": "user", "content": text}]
-                })
+                payload['temperature'] = temp
+            data = json.dumps(payload)
             response = requests.post(API_URL_gpt, headers=HEADERS_gpt, data=data)
-    
+
             response_json = response.json()
+            if 'choices' not in response_json:
+                _log('GPT4o', f"API error (status={response.status_code}): {response_json}")
+                raise KeyError('choices')
             res = response_json['choices'][0]['message']['content'].replace('\n','')
         except Exception as e:
-            print(e)
+            _log('GPT4o', f"retry {50-num+1}/50 - {e}")
             time.sleep(5)
             num -= 1
     
@@ -171,9 +186,13 @@ if HAS_GPU:
 else:
     print(f"[API mode] No GPU detected. Using LLaMA via API: {LLAMA_BASE_URL} model={LLAMA_MODEL}")
 
+print(f"[Config] GPT provider={GPT_PROVIDER} | model={GPT_MODEL} | judge={GPT_JUDGE_MODEL}")
+print(f"[Config] GPT endpoint: {API_URL_gpt}")
+
 
 def _llama_api_generate(text):
     """Call LLaMA through an OpenAI-compatible API endpoint."""
+    _step_counter['llama'] += 1
     url = LLAMA_BASE_URL.rstrip('/') + '/chat/completions'
     headers = {
         "Content-Type": "application/json",
@@ -190,9 +209,12 @@ def _llama_api_generate(text):
         try:
             response = requests.post(url, headers=headers, data=payload)
             result = response.json()
+            if 'choices' not in result:
+                _log('LLaMA', f"API error (status={response.status_code}): {result}")
+                raise KeyError('choices')
             return result['choices'][0]['message']['content'].strip()
         except Exception as e:
-            print(f"[LLaMA API error] {e}")
+            _log('LLaMA', f"retry {10-num+1}/10 - {e}")
             time.sleep(5)
             num -= 1
     return ""
@@ -228,42 +250,54 @@ def gen_vote_template(question, ref1, ref2, ref3):
     return prompt.format(question=question, ref1 = ref1, ref2 = ref2, ref3 = ref3)
 
 
-def deep_search(task_name, seed_prompts):  #knowledge point, seed questions for the knowledge point
+def deep_search(task_name, seed_prompts, max_steps=10):  #knowledge point, seed questions for the knowledge point
     history = []
     steps = []
-    
+
     score_func = get_gpt4_score           #give score according to the ref answer and the output of the target model
     optimize_func = gpt4o_turbo_generate   #give ref answer
 
     final_data['search_optimize_func'] = str(optimize_func)
     final_data['score_func'] = str(score_func)
+    _log('SEARCH', f"Starting deep_search for '{task_name}' with {len(seed_prompts)} seeds")
 
     for idx in range(len(seed_prompts)):
+        _log('SEARCH', f"Seed {idx+1}/{len(seed_prompts)} - evaluating")
         i = seed_prompts[idx]  # the idx-th question (test case)
         question_prompt = gen_fact_problem_template(i['prompt']) #prompt means the question
+        _log('SEARCH', f"  generating 3 ref answers...")
         ref_ans1 = optimize_func(question_prompt, temp=0)
         ref_ans2 = optimize_func(question_prompt, temp=0)
         ref_ans3 = optimize_func(question_prompt, temp=0)
+        _log('SEARCH', f"  voting on ref answers...")
         ref_ans = optimize_func(gen_vote_template(i['prompt'], ref_ans1, ref_ans2, ref_ans3), temp=0)
+        _log('SEARCH', f"  judging ref answer...")
+        key_point = i['key_point']
+        _judge_retries = 0
         while True:
             try:
                 ref_ans = judge_ref_answer(question_prompt, key_point, ref_ans)
                 break
-            except:
-                continue
+            except Exception as e:
+                _judge_retries += 1
+                _log('SEARCH', f"  judge_ref_answer retry {_judge_retries} - {e}")
+                if _judge_retries >= 10:
+                    _log('SEARCH', f"  judge_ref_answer gave up after 10 retries")
+                    break
+        _log('SEARCH', f"  calling LLaMA...")
         gen_res = llama2_generate(question_prompt)
         seed_prompts[idx]['answer'] = gen_res
         seed_prompts[idx]['ref_ans'] = ref_ans
         i = seed_prompts[idx]
+        _log('SEARCH', f"  scoring...")
         for _ in range(3):
             try:
-                print('deep_search: first try')
                 score_res = score_func(i['prompt'], i['answer'], i['ref_ans'], i['key_point'])
                 i['comparison'] = score_res
                 i['score'] = float(re.findall(r'\[\[.*?\]\]', score_res.strip())[-1].replace('[[', '').replace(']]', ''))
                 break
             except Exception as e:
-                print(e)
+                _log('SEARCH', f"  scoring error: {e}")
 
         seed_prompts[idx]['score'] = i['score']
         seed_prompts[idx]['comparison'] = i['comparison']
@@ -271,8 +305,8 @@ def deep_search(task_name, seed_prompts):  #knowledge point, seed questions for 
         steps.append(i)
 
     show_num = 5
-    while len(steps) < 30:  #Iterative search
-        print('current step:', len(steps))
+    while len(steps) < max_steps:  #Iterative search
+        _log('SEARCH', f"Step {len(steps)}/{max_steps} | API calls: gpt4o={_step_counter['gpt4o']} mini={_step_counter['gpt4o_mini']} llama={_step_counter['llama']}")
         optimized_prompt = """This task involves generating test cases for the fact-checking task. Fact-checking is an important capability of LLMs, where the LLM should analyze textual information to identify the factuality of the source claim. Here, you need to ask the LLM to be tested to accurately assess the factuality of the information presented with the claim itself, or auxiliary information.
 Previous Prompts:\n\n"""
 
@@ -429,28 +463,31 @@ Step 3 "auxiliary_info":
 Step 4 "key_point":
 Step 5 Repeat Step 1-4 for each test case and then output one final JSON format: {"test_case1": {"key_point": string(...), "test_mode": string(...), "prompt": {"source_claim": string(...), "auxiliary_info": string(...)}}, "test_case2": {...}, ...}."""
     res = []
-    while True:
+    max_outer_retries = 5
+    for _outer_attempt in range(max_outer_retries):
         try:
-            print('gen_seed')
+            _log('SEED', f"Generating seeds for '{task_name}' (attempt {_outer_attempt+1}/{max_outer_retries})")
             prompts = gpt4o_generate(prompt_template.replace(r"{task_name}", task_name).replace(r"{categories}", json.dumps(categories)), 0.0)
 
             prompts = find_dict(prompts)
             count_wiki_judge = 0
+            wiki_passed = False
             while True:
                 try:
                     count_wiki_judge += 1
                     wiki_judge = wikipedia_judge(prompts)
-                    print(wiki_judge)
+                    _log('SEED', f"Wikipedia judge: {wiki_judge} (attempt {count_wiki_judge}/5)")
                     if wiki_judge == False:
                         prompts = judge_new_case(task_name, json.dumps(prompts))
                         prompts = find_dict(prompts)
                         if count_wiki_judge >=5:
-                            print('dead loopppp')
+                            _log('SEED', "Wikipedia check failed 5 times, skipping verification")
                             break
                         continue
+                    wiki_passed = True
                     break
                 except Exception as e:
-                    print(e)
+                    _log('SEED', f"Wikipedia judge error: {e}")
                     continue
             for k in prompts.keys():
                 assert ("key_point" in prompts[k])
@@ -459,9 +496,10 @@ Step 5 Repeat Step 1-4 for each test case and then output one final JSON format:
                 res.append(prompts[k])
             break
         except Exception as e:
-            print(e)
-            # print(prompts)
+            _log('SEED', f"Outer retry - {e}")
             continue
+    if not res:
+        _log('SEED', f"FAILED to generate seeds for '{task_name}' after {max_outer_retries} attempts")
     return res
     
 def analysis(task_names):
@@ -777,6 +815,10 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--category', default=None, type=str)
+    parser.add_argument('--limit-points', type=int, default=15,
+                        help="Max knowledge points to evaluate (default: 15, use 1 for ~10 claims)")
+    parser.add_argument('--limit-steps', type=int, default=10,
+                        help="Max steps per knowledge point in deep_search (default: 10)")
     args = parser.parse_args()
 
     main_cat = args.category.lower().replace(' ', '_') 
@@ -802,7 +844,7 @@ if __name__ == '__main__':
     final_data = {'init_points': test_points, 'new_points': []}  #knowledge points under this category
     idx = 0
     
-    while idx < len(test_points) and idx <= 15: #15
+    while idx < len(test_points) and idx < args.limit_points:
         
         task = test_points[idx]  #main task: sub task
         print(f'Begin gen seed: {task}')
@@ -815,7 +857,7 @@ if __name__ == '__main__':
         with open(f'{output_path}/log.json', 'w', encoding='utf-8') as f:
             json.dump(final_data, f, indent=4, ensure_ascii=False)
         
-        deep_search(task, seeds) #knowledge point, seed questions for the knowledge point
+        deep_search(task, seeds, max_steps=args.limit_steps) #knowledge point, seed questions for the knowledge point
         
         if idx == len(test_points) - 1:
             for x in range(3):
