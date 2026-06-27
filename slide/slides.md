@@ -8,89 +8,142 @@ math: katex
 backgroundColor: "#ffffff"
 color: "#1d2b36"
 style: |
-  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+  :root {
+    --navy:#1F3A68; --navy-deep:#16294d; --ink:#1d2b36;
+    --accent:#2a6df4; --soft:#eef3fb; --line:#d4deee; --muted:#6b7a90;
+  }
   section {
     font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
-    font-size: 21px;
-    padding: 100px 64px 64px 64px;
-    background: #ffffff;
-    color: #1d2b36;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start !important;
-    align-content: flex-start;
+    font-size: 22px;
+    padding: 92px 66px 58px 66px;
+    background:
+      radial-gradient(1200px 380px at 88% -8%, #eef3fb 0%, rgba(238,243,251,0) 60%),
+      #ffffff;
+    color: var(--ink);
+    display: flex; flex-direction: column;
+    justify-content: flex-start !important; align-content: flex-start;
+    letter-spacing:.1px;
   }
-  section.mid { justify-content: center !important; }   /* chỉ slide NGẮN mới thêm class mid để canh giữa */
-  /* slide ít chữ: thêm class "airy" để giãn cách, lấp đầy bớt khoảng trắng */
-  section.airy li { margin:18px 0; }
-  section.airy td, section.airy th { padding-top:12px; padding-bottom:12px; }
-  section.airy .box { padding:18px 22px; margin-top:22px; }
-  section.airy p { margin:18px 0; }
-  section.airy h3 { margin-bottom:14px; }
+  /* --- THANH HEADER NAVY gradient tràn viền (dùng cho ## slide nội dung) --- */
   h2 {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    margin: 0;
-    background: #1F3A68;
-    color: #ffffff !important;
-    font-size: 26px;
-    font-weight: 600;
-    padding: 14px 64px;
+    position: absolute; top: 0; left: 0; right: 0; margin: 0;
+    background: linear-gradient(100deg, var(--navy-deep) 0%, var(--navy) 58%, #28508f 100%);
+    color: #ffffff !important; font-size: 27px; font-weight: 600;
+    padding: 16px 66px 14px 66px;
+    box-shadow: 0 3px 14px rgba(15,29,56,.18);
   }
-  h3 { color:#1F3A68; font-size:21px; margin-bottom:4px; }
-  strong { color:#1F3A68; }
-  em { color:#1d4ed8; font-style:normal; }
-  a { color:#1F3A68; }
-  code { background:#e7edf6; color:#1F3A68; padding:1px 6px; border-radius:4px; }
-  ul { list-style:none; padding-left:6px; }
-  ul li { position:relative; padding-left:24px; margin:10px 0; }
-  ul li::before { content:"●"; color:#1F3A68; font-size:14px; position:absolute; left:0; top:4px; }
-  ol li { margin:10px 0; }
-  table { font-size:18px; border-collapse:collapse; margin:6px auto; }
-  th { background:#1F3A68; color:#ffffff; }
-  td { background:#ffffff; }
-  td,th { border:1px solid #c3d2ea; padding:5px 12px; }
-  blockquote { border-left:4px solid #1F3A68; background:#e7edf6; color:#20324f; padding:8px 18px; }
-  footer { left:0; bottom:0; width:100%; box-sizing:border-box;
-           display:flex; padding:0; height:26px; font-size:13px; color:#ffffff;
-           background:linear-gradient(90deg,#0e1d38 0%,#16294d 30%,#1f3a68 62%,#2a4d86 100%); }
+  h3 {
+    color: var(--navy); font-size: 22px; font-weight: 700; margin: 2px 0 12px 0;
+    padding-bottom: 6px; border-bottom: 2px solid var(--line); display: inline-block;
+  }
+  p { margin: 8px 0; }
+  strong { color: var(--navy); font-weight: 700; }
+  em { color: var(--accent); font-style: normal; font-weight: 600; }
+  a { color: var(--navy); }
+  code { background: var(--soft); color: var(--navy); padding: 1px 7px; border-radius: 5px; font-size: .94em; }
+  /* --- bullet markers gradient vuông bo --- */
+  ul { list-style: none; padding-left: 4px; margin: 6px 0; }
+  ul li { position: relative; padding-left: 26px; margin: 10px 0; line-height: 1.45; }
+  ul li::before {
+    content: ""; position: absolute; left: 3px; top: .55em;
+    width: 8px; height: 8px; border-radius: 3px;
+    background: linear-gradient(135deg, var(--navy), var(--accent));
+  }
+  ol { padding-left: 22px; } ol li { margin: 10px 0; line-height: 1.45; }
+  /* --- bảng bo góc + đổ bóng + zebra --- */
+  table { font-size: 19px; border-collapse: collapse; margin: 10px auto; width: 100%;
+    border-radius: 10px; overflow: hidden; }
+  thead th { background: var(--navy); color: #fff; font-weight: 600; }
+  th { background: var(--navy); color: #fff; }
+  tbody tr:nth-child(even) td { background: #f6f9fe; }
+  td, th { border: 1px solid var(--line); padding: 7px 13px; }
+  blockquote {
+    border: none; border-left: 5px solid var(--accent);
+    background: var(--soft); color: #20324f; padding: 11px 20px;
+    border-radius: 0 12px 12px 0; margin: 12px 0;
+  }
+  /* --- công thức display dạng card --- */
+  .katex-display {
+    background: linear-gradient(180deg, #f7faff 0%, #eef3fb 100%);
+    border: 1px solid var(--line); border-left: 5px solid var(--navy);
+    border-radius: 12px; padding: 14px 20px; margin: 12px 0;
+    box-shadow: 0 2px 12px rgba(15,29,56,.07);
+  }
+  .katex { font-size: 1.12em; }
+  /* --- footer 4 ô gradient (Name | Title | Date | page) --- */
+  footer { left:0; bottom:0; width:100%; box-sizing:border-box; display:flex; padding:0;
+    height:26px; font-size:13px; color:#ffffff;
+    background: linear-gradient(90deg,#0e1d38 0%,#16294d 30%,#1f3a68 62%,#2a4d86 100%); }
   footer span { flex:1; display:flex; align-items:center; justify-content:center;
-                border-right:1px solid rgba(255,255,255,.3); }
+    border-right:1px solid rgba(255,255,255,.28); }
   footer span:nth-child(4) { flex:0 0 64px; }
   footer span:last-child { border-right:none; }
-  section::after { position:absolute; right:18px; bottom:5px; z-index:10;
-                   color:#ffffff; font-weight:600; font-size:13px;
-                   content: attr(data-marpit-pagination) " / " attr(data-marpit-pagination-total); }
-  header { position:absolute; top:9px; right:16px; left:auto; margin:0; padding:0;
-           background:none; box-shadow:none; z-index:40; }
-  header img { height:46px; display:block; background:#ffffff; border-radius:8px;
-               padding:4px 7px; box-shadow:0 1px 5px rgba(0,0,0,.22); }
-  section.lead { text-align:center; justify-content:flex-start; }
-  .titlebox { width:100%; box-sizing:border-box; background:#1F3A68;
-    border-radius:10px; padding:24px 40px; margin:48px 0 30px 0;
-    box-shadow:0 5px 12px rgba(0,0,0,.18); text-align:center; }
-  .titlebox h1 { background:none; border:none; box-shadow:none; display:block;
-    color:#ffffff !important; font-size:36px; margin:0; padding:0; }
-  .titlebox h3 { color:#ffffff !important; font-weight:400; margin:8px 0 0 0; }
-  section.lead h3 { color:#1d2b36; font-weight:400; margin-top:0; }
-  .thanks h1 { background:none; border:none; box-shadow:none;
-    color:#1F3A68 !important; font-size:44px; font-weight:700; margin:60px 0 28px 0; padding:0; }
-  .small { font-size:16px; color:#777; }
-  .caption { font-size:14px; color:#888; font-style:italic; }
-  .cols { display:flex; gap:30px; }
-  .col { flex:1; }
-  .box { background:#e7edf6; border:1px solid #c3d2ea; border-radius:10px; padding:12px 20px; }
-  .diagram { text-align:center; margin-top:14px; }
-  .diagram img { max-height:330px; width:auto; }
+  section::after { position:absolute; right:20px; bottom:5px; z-index:10; color:#ffffff;
+    font-weight:600; font-size:13px;
+    content: attr(data-marpit-pagination) " / " attr(data-marpit-pagination-total); }
+  /* --- logo UIT góc phải (circle, giữ size nhỏ theo deck) --- */
+  header { position:absolute; top:11px; right:20px; left:auto; margin:0; padding:0;
+    background:none; box-shadow:none; z-index:40; }
+  header img { width:30px; height:30px; object-fit:contain; display:block; background:#ffffff;
+    border-radius:50%; padding:4px; box-sizing:border-box; box-shadow:0 1px 5px rgba(0,0,0,.22); }
+  section.cover header img { background:none; box-shadow:none; padding:0; }
+  /* --- slide bìa / cảm ơn dạng lead --- */
+  section.lead { text-align:center; justify-content:center; }
+  section.lead::before { content:""; position:absolute; top:0; left:0; right:0; height:8px;
+    background: linear-gradient(90deg, var(--navy) 0%, var(--accent) 100%); }
+  .titlebox { width:100%; box-sizing:border-box;
+    background: linear-gradient(120deg, #16294d 0%, #1F3A68 60%, #2a558f 100%);
+    border-radius:16px; padding:28px 44px; margin:10px 0 24px 0;
+    box-shadow:0 10px 30px rgba(15,29,56,.22); text-align:center; }
+  .titlebox h1 { background:none; border:none; color:#fff !important;
+    font-size:40px; margin:0; padding:0; letter-spacing:.3px; }
+  .titlebox h3 { color:#cfe0ff !important; font-weight:400; border:none; margin:10px 0 0 0; display:block; }
+  section.lead h1 { color:var(--navy); font-size:40px; }
+  section.lead h3 { color:var(--ink); font-weight:400; border:none; display:block; }
+  .thanks h1 { background:none; border:none; box-shadow:none; color:var(--navy) !important;
+    font-size:46px; font-weight:700; margin:40px 0 24px 0; padding:0; }
+  /* --- slide chuyển mục (section divider): nền navy + số mờ lớn --- */
+  section.divider {
+    background-color:#16294d !important;
+    background-image: linear-gradient(135deg,#0e1d38 0%,#16294d 45%,#1F3A68 100%) !important;
+    color:#eaf1fc; justify-content:center !important; align-content:center;
+    padding:92px 80px; overflow:hidden;
+  }
+  section.divider footer { display:none; }
+  section.divider .dnum { position:absolute; top:14px; right:50px;
+    font-size:260px; font-weight:800; line-height:1;
+    color:rgba(255,255,255,.06); letter-spacing:-6px; z-index:0; pointer-events:none; }
+  section.divider .dbar { width:64px; height:6px; border-radius:3px; position:relative; z-index:1;
+    background:linear-gradient(90deg,var(--accent),#86b4ff); margin:0 0 20px 0; }
+  section.divider h1 { color:#ffffff !important; background:none; border:none; box-shadow:none;
+    font-size:46px; line-height:1.12; margin:0 0 16px 0; padding:0; position:relative; z-index:1; max-width:82%; }
+  section.divider .dsub { color:#cfe0ff; font-size:23px; line-height:1.5; max-width:80%; position:relative; z-index:1; }
+  section.divider .dmeta { color:#9db4d8; font-size:18px; margin-top:28px; position:relative; z-index:1; }
+  /* --- components --- */
+  .small { font-size:17px; color:var(--muted); }
+  .caption { font-size:15px; color:#888; font-style:italic; }
+  .box { background:#f7faff; border:1px solid var(--line); border-left:5px solid var(--accent);
+    border-radius:0 12px 12px 0; padding:12px 20px; box-shadow:0 2px 12px rgba(15,29,56,.06); }
+  .warn { background:#fff8ec; border:1px solid #f3dca6; border-left:5px solid #e0a51e;
+    border-radius:0 12px 12px 0; padding:12px 20px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+  .cols { display:flex; gap:30px; } .col { flex:1; }
+  .center { text-align:center; }
+  /* --- sơ đồ (ảnh / SVG) --- */
+  .diagram { text-align:center; margin-top:12px; }
+  .diagram img { max-height:300px; width:auto; }
+  .box, .warn, .grid2, .cols, table { margin-top:14px; margin-bottom:14px; }
   /* --- khoanh đỏ nổi bật (CSS overlay): đặt trong <div position:relative> --- */
   .hl { position:absolute; border:3px solid #e11d48; border-radius:8px; z-index:30; pointer-events:none;
         box-shadow:0 0 0 2px rgba(225,29,72,.12); }
   .hl-oval { border-radius:50%; }
-footer: '<span>Nhóm 8 · IT2040</span><span>FACT-AUDIT</span><span>Ho Chi Minh, 7/2026</span><span></span>'
+footer: '<span>Nhóm 8 · IT2040</span><span>FACT-AUDIT</span><span>Ho Chi Minh, 07/2026</span><span></span>'
 header: '<img src="assets/UIT_logo.svg" alt="UIT">'
 ---
 
-<!-- _class: lead -->
+<!-- _class: lead cover -->
+<!-- _paginate: false -->
 
 <div class="titlebox">
 
@@ -107,7 +160,7 @@ GVHD: TS. Lưu Thanh Sơn
 
 <br>
 
-<span class="small">Ho Chi Minh, 7/2026</span>
+<span class="small">Ho Chi Minh, 07/2026</span>
 
 <!--
 Chào thầy và các bạn. Nhóm 8 xin trình bày đề tài FACT-AUDIT cộng RAG, dựa trên bài báo công bố tại ACL 2025. Phần đầu (cơ sở lý thuyết) do em phụ trách; phần cài đặt và kết quả các bạn trình bày sau. [~25s]
@@ -115,11 +168,13 @@ Chào thầy và các bạn. Nhóm 8 xin trình bày đề tài FACT-AUDIT cộn
 
 ---
 
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>FACT-AUDIT</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
 ## Nội dung trình bày
 
 1. **Bối cảnh & động lực**: vì sao cần đánh giá fact-checking của LLM?
-2. **FACT-AUDIT framework**: 3 giai đoạn + Importance Sampling
-3. **Khung 5 agent** + cấu trúc test case
+2. **FACT-AUDIT framework**: 3 giai đoạn và Importance Sampling
+3. **Khung 5 agent** và cấu trúc test case
 4. **Metrics & Kết quả**: IMR / JFR / Grade trên 13 LLM
 5. **Từ Limitation → RAG**: đề xuất mở rộng của nhóm
 
@@ -131,7 +186,21 @@ Bài gồm 5 phần: bối cảnh, khung FACT-AUDIT, các agent và dữ liệu 
 
 ---
 
-<!-- _class: airy -->
+<!-- _class: divider -->
+
+<div class="dnum">1</div>
+
+<div class="dbar"></div>
+
+# Bối cảnh & động lực
+
+<div class="dsub">Vì sao cần đánh giá năng lực fact-checking của LLM?</div>
+
+<div class="dmeta">Phần 1</div>
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>1. Bối cảnh & động lực</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Bài toán & câu hỏi trung tâm
 
@@ -152,6 +221,8 @@ Fact-checking nghĩa là đưa mô hình một phát biểu, nó phải vừa ph
 -->
 
 ---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>1. Bối cảnh & động lực</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Hạn chế của các phương pháp đánh giá hiện có
 
@@ -181,6 +252,22 @@ Ba hạn chế của cách đánh giá cũ: gán nhãn thủ công tốn kém; d
 -->
 
 ---
+
+<!-- _class: divider -->
+
+<div class="dnum">2</div>
+
+<div class="dbar"></div>
+
+# FACT-AUDIT framework
+
+<div class="dsub">3 giai đoạn lặp · Importance Sampling nhắm điểm yếu</div>
+
+<div class="dmeta">Phần 2</div>
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>2. FACT-AUDIT framework</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## FACT-AUDIT: ý tưởng cốt lõi
 
@@ -214,6 +301,8 @@ Hai đặc trưng: dữ liệu cập nhật động và chấm cả lập luận
 
 ---
 
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>2. FACT-AUDIT framework</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
 ## Pipeline 3 giai đoạn (vòng lặp)
 
 <div class="diagram">
@@ -234,7 +323,31 @@ Ba giai đoạn lặp: Prototype Emulation sinh dữ liệu kiểm thử; Fact V
 
 ---
 
+<!-- _class: divider -->
+
+<div class="dnum">3</div>
+
+<div class="dbar"></div>
+
+# Khung 5 agent & test case
+
+<div class="dsub">5 vai trò agent · taxonomy kịch bản · cấu trúc test case</div>
+
+<div class="dmeta">Phần 3</div>
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
 ## Khung 5 Agent
+
+<style scoped>
+  section { padding-top: 78px; }
+  ul { margin: 4px 0; }
+  ul li { margin: 6px 0; }
+  .diagram { margin-top: 4px; }
+  .diagram img { max-height: 360px; }
+</style>
 
 - **Appraiser** *(stage 1 & 3)*: xây & **cập nhật taxonomy** kịch bản
 - **Inquirer** *(1)*: sinh **prototype test data**
@@ -242,9 +355,9 @@ Ba giai đoạn lặp: Prototype Emulation sinh dữ liệu kiểm thử; Fact V
 - **Evaluator** *(2)*: **LLM-as-a-Judge**, chấm **Grade 1–10**, lưu $M$
 - **Prober** *(2)*: **probing lặp** từ $M$ → sinh case khó hơn
 
-<div class="diagram" style="margin-top:8px;">
+<div class="diagram" style="margin-top:4px;">
 
-![w:830px](assets/paper_fig2.png)
+![w:900px](assets/paper_fig2.png)
 
 </div>
 
@@ -255,6 +368,8 @@ Năm agent: Appraiser xây cây kịch bản; Inquirer sinh đề; Quality Inspe
 -->
 
 ---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Taxonomy kịch bản fact-checking
 
@@ -272,7 +387,7 @@ Appraiser khởi tạo cây kịch bản từ ba nhóm: Complex Claim, Fake News
 
 ---
 
-<!-- _class: airy -->
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Cấu trúc một test case
 
@@ -308,7 +423,21 @@ Mỗi đề gồm bốn phần: Key Point chỉ dẫn nhiệm vụ, Source Claim
 
 ---
 
-<!-- _class: airy -->
+<!-- _class: divider -->
+
+<div class="dnum">4</div>
+
+<div class="dbar"></div>
+
+# Metrics & Kết quả
+
+<div class="dsub">IMR · JFR · Grade — đánh giá trên 13 LLM</div>
+
+<div class="dmeta">Phần 4</div>
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Metrics đánh giá
 
@@ -325,6 +454,8 @@ Ba chỉ số: IMR là tỉ lệ câu bị chấm từ ba điểm trở xuống,
 -->
 
 ---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Kết quả: 13 LLM (Table 1)
 
@@ -343,6 +474,8 @@ Bảng đầy đủ 13 mô hình với IMR, JFR, Grade ở cả ba nhóm và Ove
 -->
 
 ---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Phân tích sâu
 
@@ -373,7 +506,7 @@ Hai phân tích bổ sung. Bên trái: hai kịch bản khó nhất của mỗi 
 
 ---
 
-<!-- _class: airy -->
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Test Mode quyết định độ khó
 
@@ -390,6 +523,22 @@ Hai phân tích bổ sung. Bên trái: hai kịch bản khó nhất của mỗi 
 -->
 
 ---
+
+<!-- _class: divider -->
+
+<div class="dnum">5</div>
+
+<div class="dbar"></div>
+
+# Từ Limitation → RAG
+
+<div class="dsub">Đề xuất mở rộng của nhóm: cấp evidence qua retriever</div>
+
+<div class="dmeta">Phần 5</div>
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>5. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Từ Limitation → RAG (đề xuất của nhóm)
 
