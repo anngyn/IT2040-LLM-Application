@@ -1,273 +1,306 @@
-# FACT-AUDIT Experiment Report
+# Báo cáo Thực nghiệm FACT-AUDIT
 
-## Overview
+## Tổng quan
 
-This report documents experiments conducted to understand how **retrieval-augmented generation (RAG)** and **external evidence** affect LLM fact-checking ability, building on the FACT-AUDIT framework (adaptive multi-agent dynamic fact-checking evaluation).
+Báo cáo này ghi nhận các thực nghiệm nhằm tìm hiểu cách **retrieval-augmented generation (RAG)** và **bằng chứng bên ngoài** ảnh hưởng đến khả năng kiểm chứng sự kiện (fact-checking) của LLM, dựa trên framework FACT-AUDIT (adaptive multi-agent dynamic fact-checking evaluation).
 
-**Research question:** Does providing retrieved evidence improve LLM fact-checking? Under what conditions does it help or hurt?
+**Câu hỏi nghiên cứu:** Việc cung cấp bằng chứng truy xuất có cải thiện khả năng fact-checking của LLM không? Trong điều kiện nào nó giúp ích hoặc gây hại?
 
 ---
 
-## Setup
+## Cài đặt thực nghiệm
 
 ### Framework: FACT-AUDIT
 
-FACT-AUDIT uses 3 roles:
-- **Optimizer** (generates reference answers + test cases)
-- **Judge** (scores target model's response, 1-10)
-- **Target** (LLM being evaluated)
+FACT-AUDIT sử dụng 3 vai trò:
+- **Optimizer** — sinh câu trả lời tham chiếu (reference answer) và test cases
+- **Judge** — chấm điểm câu trả lời của target model (thang 1-10)
+- **Target** — LLM đang được đánh giá
 
-### Models used
+### Các model sử dụng
 
-| Role | Provider | Model |
-|------|----------|-------|
+| Vai trò | Provider | Model |
+|---------|----------|-------|
 | Optimizer | Google Gemini | gemini-2.5-flash |
 | Judge | Google Gemini | gemini-2.5-flash |
-| Target (weak) | Third-party (vilao.ai) | ts/llama-4-scout-17b-16e-instruct |
-| Target (strong) | Google Gemini | gemini-2.5-pro |
+| Target (yếu) | Third-party (vilao.ai) | ts/llama-4-scout-17b-16e-instruct |
+| Target (mạnh) | Google Gemini | gemini-2.5-pro |
 
-### Metrics (from paper)
+### Chỉ số đánh giá (theo paper)
 
-- **Grade**: Average score (1-10), higher = better fact-checking
-- **IMR** (Incorrect & Missed Rate): % of scores <= 3, lower = better
+- **Grade**: Điểm trung bình (1-10), cao hơn = fact-checking tốt hơn
+- **IMR** (Incorrect & Missed Rate): % điểm <= 3, thấp hơn = tốt hơn
 
-### Test modes (from paper)
+### Các chế độ test (theo paper)
 
-| Mode | Description |
-|------|-------------|
-| `[claim]` | Only the claim, no evidence — tests parametric knowledge |
-| `[evidence]` | Claim + gold evidence (written by optimizer) — tests evidence utilization |
-| `[wisdom of crowds]` | Claim + social media threads — tests noisy evidence handling |
+| Chế độ | Mô tả |
+|--------|--------|
+| `[claim]` | Chỉ cho claim, không có evidence — kiểm tra kiến thức tham số (parametric knowledge) |
+| `[evidence]` | Claim + gold evidence (do optimizer viết) — kiểm tra khả năng sử dụng bằng chứng |
+| `[wisdom of crowds]` | Claim + luồng thảo luận mạng xã hội — kiểm tra khả năng xử lý bằng chứng nhiễu |
 
 ---
 
-## Experiment 1: Baseline
+## Thực nghiệm 1: Baseline
 
-**Goal:** Establish baseline performance of target model using claim-only mode.
+**Mục tiêu:** Thiết lập hiệu suất nền (baseline) của model target khi chỉ dùng claim.
 
 **Script:** `scripts/fact-audit.py`
 
-**Config:**
-- Target: ts/llama-4-scout-17b-16e-instruct (via third-party provider)
-- 10 claims, 2 knowledge points, 5 steps each
-- Mixed test modes (claim, evidence, wisdom of crowds)
+**Cấu hình:**
+- Target: ts/llama-4-scout-17b-16e-instruct (qua third-party provider)
+- 10 claims, 2 knowledge points, mỗi point 5 steps
+- Trộn các test modes (claim, evidence, wisdom of crowds)
 
-### Results
+### Kết quả
 
 | Model | Grade | IMR |
 |-------|-------|-----|
 | LLaMA-4-Scout-17B | 8.80 | 10% |
 
-**Finding:** LLaMA-4-Scout performs reasonably well using only parametric knowledge. It correctly identifies most fictional claims as unverifiable.
+### Nhận xét
+
+LLaMA-4-Scout hoạt động khá tốt khi chỉ dùng kiến thức tham số (parametric knowledge). Model nhận diện đúng hầu hết các claim hư cấu là "không thể xác minh", cho thấy khả năng suy luận nội tại tương đối ổn định. Điểm IMR chỉ 10% nghĩa là chỉ 1/10 claim bị đánh giá sai hoàn toàn.
 
 ---
 
-## Experiment 2: Gold Evidence (Paper's Contrastive Evidence)
+## Thực nghiệm 2: Gold Evidence (Bằng chứng đối sánh của paper)
 
-**Goal:** Test whether paper's gold evidence (optimizer-generated) helps or hurts a weak model.
+**Mục tiêu:** Kiểm tra xem gold evidence (do optimizer sinh) của paper có giúp model yếu hay không.
 
 **Script:** `scripts/fact-audit-exp2-gold-evidence.py`
 
-**Method:**
-1. Load claims from baseline log.json
-2. For each claim: run target in `[claim]` mode (no evidence)
-3. If claim has gold auxiliary_info: also run in `[evidence]` or `[wisdom]` mode
-4. Compare scores
+**Phương pháp:**
+1. Load claims từ kết quả baseline (log.json)
+2. Với mỗi claim: chạy target ở chế độ `[claim]` (không evidence)
+3. Nếu claim có gold auxiliary_info: chạy thêm ở chế độ `[evidence]` hoặc `[wisdom]`
+4. So sánh điểm 2 chế độ
 
-### Results
+### Kết quả
 
-| Mode | Grade (claim-only) | Grade (with evidence) | Delta |
-|------|--------------------|-----------------------|-------|
-| Overall | 5.60 | 1.50 | -4.10 |
+| Chế độ | Grade (chỉ claim) | Grade (có evidence) | Delta |
+|--------|--------------------|-----------------------|-------|
+| Tổng thể | 5.60 | 1.50 | -4.10 |
 | [evidence] | 3.00 | 1.50 | -1.50 |
 | [wisdom of crowds] | 6.00 | 1.50 | -4.50 |
 
-Per-claim improvements: [-2.0, -8.0, -1.0, -1.0]
+Cải thiện theo từng claim: [-2.0, -8.0, -1.0, -1.0]
 
-**Finding:** Gold evidence **hurts** weak model (LLaMA-4-Scout). Paper's contrastive evidence contains supporting + refuting + neutral information. Weak model cannot distinguish which evidence supports and which refutes the claim — gets confused and scores worse.
+### Nhận xét
 
-**Interpretation:** Paper's conclusion ("evidence helps") is conditional on model strength. Strong models (GPT-4) can filter contrastive evidence; weak models cannot.
+Gold evidence của paper **làm giảm** điểm của model yếu (LLaMA-4-Scout). Nguyên nhân:
+
+1. **Bản chất contrastive evidence**: Paper thiết kế gold evidence chứa đồng thời thông tin hỗ trợ (supporting), bác bỏ (refuting), và trung lập (neutral). Mục đích là test khả năng phân biệt của model.
+
+2. **Model yếu không phân biệt được**: LLaMA-4-Scout không có khả năng lọc ra đâu là thông tin hỗ trợ, đâu là thông tin bác bỏ. Khi thấy hỗn hợp thông tin, model bị nhiễu loạn và đưa ra kết luận sai.
+
+3. **So với paper**: Paper báo cáo evidence giúp cải thiện điểm — nhưng chỉ đúng với model mạnh (GPT-4, Claude). Model mạnh có khả năng reasoning để lọc contrastive evidence; model yếu thì không.
+
+**Kết luận:** Kết luận "evidence giúp fact-checking" của paper phụ thuộc vào sức mạnh model. Đây là limitation mà paper chưa nhấn mạnh đủ.
 
 ---
 
-## Experiment 3: RAG with Wikipedia Retrieval
+## Thực nghiệm 3: RAG với Wikipedia
 
-**Goal:** Test whether real-world retrieved evidence (Wikipedia) improves fact-checking vs baseline.
+**Mục tiêu:** Kiểm tra liệu bằng chứng truy xuất thực tế (từ Wikipedia) có cải thiện fact-checking so với baseline.
 
 **Script:** `scripts/fact-audit-rag.py`
 
-**Method:**
-1. Load 10 claims from baseline results
-2. For each claim:
-   - Run target with claim-only prompt (baseline)
-   - Search Wikipedia API for relevant passages (top_k=5, max_chars=1500)
-   - If evidence found: run target with RAG prompt (claim + retrieved evidence)
-   - If no evidence found: **fallback to claim-only prompt** (prevents confusion from empty evidence)
-3. Judge scores both responses
-4. Compare
+**Phương pháp:**
+1. Load 10 claims từ kết quả baseline
+2. Với mỗi claim:
+   - Chạy target với prompt chỉ-claim (baseline)
+   - Tìm kiếm Wikipedia API cho các đoạn văn liên quan (top_k=5, max_chars=1500)
+   - Nếu tìm được evidence: chạy target với RAG prompt (claim + evidence truy xuất)
+   - Nếu không tìm được: **fallback về prompt chỉ-claim** (tránh confuse model bằng "không có evidence")
+3. Judge chấm điểm cả 2 câu trả lời
+4. So sánh
 
-**RAG retrieval pipeline:**
+**Pipeline RAG:**
 ```
 claim text → Wikipedia Search API → top-k page titles → Wikipedia Extract API → text passages → RAG prompt
 ```
 
-### Results: LLaMA-4-Scout (weak model)
+### Kết quả: LLaMA-4-Scout (model yếu)
 
-| Metric | Baseline | RAG | Delta |
+| Chỉ số | Baseline | RAG | Delta |
 |--------|----------|-----|-------|
 | Grade | 6.20 | 5.40 | -0.80 |
 | IMR | 40% | 60% | +20% |
 
-Per-claim:
+Chi tiết từng claim:
 
-| # | Claim topic | Baseline | RAG | Delta | Wiki results |
-|---|-------------|----------|-----|-------|--------------|
-| 1 | HR 1234 bill | 3 | 3 | 0 | 0 (fallback) |
-| 2 | Leafy greens health | 8 | 10 | +2 | 0 (fallback) |
-| 3 | Quantum Leap processor | 2 | 9 | +7 | 0 (fallback) |
-| 4 | IPCC report | 2 | 2 | 0 | 0 (fallback) |
-| 5 | Freedom March | 9 | 2 | **-7** | 5 passages |
-| 6 | TechGiant stock | 10 | 3 | **-7** | 5 passages |
-| 7 | Elizabeth I | 2 | 10 | +8 | 0 (fallback) |
-| 8 | Mars discovery | 7 | 10 | +3 | 0 (fallback) |
-| 9 | Global Peace Accord | 9 | 2 | **-7** | 2 passages |
-| 10 | Online Safety Act | 10 | 3 | **-7** | 4 passages |
+| # | Chủ đề | Baseline | RAG | Delta | Kết quả Wiki |
+|---|--------|----------|-----|-------|--------------|
+| 1 | Dự luật HR 1234 | 3 | 3 | 0 | 0 (fallback) |
+| 2 | Rau xanh & sức khỏe | 8 | 10 | +2 | 0 (fallback) |
+| 3 | Vi xử lý Quantum Leap | 2 | 9 | +7 | 0 (fallback) |
+| 4 | Báo cáo IPCC | 2 | 2 | 0 | 0 (fallback) |
+| 5 | Freedom March | 9 | 2 | **-7** | 5 đoạn |
+| 6 | Cổ phiếu TechGiant | 10 | 3 | **-7** | 5 đoạn |
+| 7 | Elizabeth I theo Công giáo | 2 | 10 | +8 | 0 (fallback) |
+| 8 | Phát hiện sự sống trên Sao Hỏa | 7 | 10 | +3 | 0 (fallback) |
+| 9 | Hiệp ước Hòa bình Toàn cầu | 9 | 2 | **-7** | 2 đoạn |
+| 10 | Luật An toàn Trực tuyến | 10 | 3 | **-7** | 4 đoạn |
 
-### Results: Gemini 2.5 Pro (strong model)
+### Kết quả: Gemini 2.5 Pro (model mạnh)
 
-| Metric | Baseline | RAG | Delta |
+| Chỉ số | Baseline | RAG | Delta |
 |--------|----------|-----|-------|
 | Grade | **9.50** | 6.70 | **-2.80** |
 | IMR | **0%** | 40% | +40% |
 
-Per-claim:
+Chi tiết từng claim:
 
-| # | Claim topic | Baseline | RAG | Delta | Wiki results |
-|---|-------------|----------|-----|-------|--------------|
-| 1 | HR 1234 bill | 10 | 10 | 0 | 0 (fallback) |
-| 2 | Leafy greens health | 10 | 10 | 0 | 0 (fallback) |
-| 3 | Quantum Leap processor | 10 | 10 | 0 | 0 (fallback) |
-| 4 | IPCC report | 9 | 10 | +1 | 0 (fallback) |
-| 5 | Freedom March | 10 | 3 | **-7** | 5 passages |
-| 6 | TechGiant stock | 9 | 1 | **-8** | 5 passages |
-| 7 | Elizabeth I | 10 | 10 | 0 | 0 (fallback) |
-| 8 | Mars discovery | 10 | 10 | 0 | 0 (fallback) |
-| 9 | Global Peace Accord | 8 | 1 | **-7** | 2 passages |
-| 10 | Online Safety Act | 9 | 2 | **-7** | 4 passages |
+| # | Chủ đề | Baseline | RAG | Delta | Kết quả Wiki |
+|---|--------|----------|-----|-------|--------------|
+| 1 | Dự luật HR 1234 | 10 | 10 | 0 | 0 (fallback) |
+| 2 | Rau xanh & sức khỏe | 10 | 10 | 0 | 0 (fallback) |
+| 3 | Vi xử lý Quantum Leap | 10 | 10 | 0 | 0 (fallback) |
+| 4 | Báo cáo IPCC | 9 | 10 | +1 | 0 (fallback) |
+| 5 | Freedom March | 10 | 3 | **-7** | 5 đoạn |
+| 6 | Cổ phiếu TechGiant | 9 | 1 | **-8** | 5 đoạn |
+| 7 | Elizabeth I theo Công giáo | 10 | 10 | 0 | 0 (fallback) |
+| 8 | Phát hiện sự sống trên Sao Hỏa | 10 | 10 | 0 | 0 (fallback) |
+| 9 | Hiệp ước Hòa bình Toàn cầu | 8 | 1 | **-7** | 2 đoạn |
+| 10 | Luật An toàn Trực tuyến | 9 | 2 | **-7** | 4 đoạn |
 
-### Key findings
+### Nhận xét
 
-1. **Irrelevant evidence hurts all models equally.** Every claim where Wikipedia returned results saw -7 to -8 point degradation, regardless of model strength.
+**1. Bằng chứng không liên quan gây hại cho tất cả model:**
 
-2. **Fallback strategy works.** Claims with 0 Wikipedia results used baseline prompt → no degradation (delta = 0 for most).
+Mọi claim mà Wikipedia trả về kết quả đều bị giảm -7 đến -8 điểm, bất kể model mạnh hay yếu. Đây là phát hiện quan trọng nhất: vấn đề nằm ở chất lượng retrieval, không phải sức mạnh model.
 
-3. **Strong model has higher baseline but same vulnerability.** Gemini 2.5 Pro scores 9.5 baseline (vs 6.2 for LLaMA) but drops equally when given irrelevant evidence.
+**2. Cơ chế gây hại:**
 
-4. **Problem: fictional claims + Wikipedia = irrelevant retrieval.** FACT-AUDIT generates fictional claims. Wikipedia has no articles about them. Search returns loosely related articles (e.g., "Freedom March" → articles about other protests). Models treat any provided evidence as authoritative.
+FACT-AUDIT sinh các claim **hư cấu** (fictional). Wikipedia không có bài viết về chúng. Khi search:
+- "Freedom March in Capital City" → Wiki trả bài về cuộc biểu tình khác (không liên quan)
+- "TechGiant Inc. stock" → Wiki trả bài về công ty tech khác
+- "Global Peace Accord" → Wiki trả bài về hiệp định khác
+
+Model nhận evidence không liên quan → **cố gắng dùng nó** thay vì bỏ qua → kết luận sai.
+
+**3. Hành vi "evidence follower" của LLM:**
+- **Không có evidence**: Model nói "Tôi không thể xác minh claim này" → đúng → điểm cao (9-10)
+- **Có evidence không liên quan**: Model cố match claim với evidence → sai → điểm thấp (1-3)
+
+Hành vi này nhất quán giữa cả model yếu (LLaMA) và mạnh (Gemini 2.5 Pro). LLM ưu tiên evidence bên ngoài hơn kiến thức nội tại, ngay cả khi evidence đó không liên quan.
+
+**4. Chiến lược fallback hoạt động tốt:**
+
+Claims không có kết quả Wikipedia → dùng prompt baseline → không bị giảm điểm. Chứng minh: khi không có evidence, không gây hại.
+
+**5. Model mạnh có baseline cao hơn nhưng cùng mức tổn thương:**
+
+Gemini 2.5 Pro đạt 9.5 baseline (so với 6.2 của LLaMA) nhưng giảm tương đương khi nhận evidence không liên quan. Delta tuyệt đối thậm chí lớn hơn (-2.80 vs -0.80) vì có nhiều "chỗ để rơi" hơn.
 
 ---
 
-## Cross-experiment Comparison
+## So sánh tổng hợp giữa các thực nghiệm
 
-| Experiment | Model | Baseline Grade | With Evidence Grade | Delta |
-|-----------|-------|---------------|--------------------:|------:|
+| Thực nghiệm | Model | Grade Baseline | Grade có Evidence | Delta |
+|-------------|-------|---------------|------------------:|------:|
 | Exp2 (gold evidence) | LLaMA-4-Scout | 5.60 | 1.50 | -4.10 |
-| Exp3 (RAG) | LLaMA-4-Scout | 6.20 | 5.40 | -0.80 |
-| Exp3 (RAG) | Gemini 2.5 Pro | 9.50 | 6.70 | -2.80 |
+| Exp3 (RAG Wikipedia) | LLaMA-4-Scout | 6.20 | 5.40 | -0.80 |
+| Exp3 (RAG Wikipedia) | Gemini 2.5 Pro | 9.50 | 6.70 | -2.80 |
+
+**Nhận xét bảng tổng hợp:**
+- Gold evidence gây hại nhiều nhất (-4.10) vì nó chứa thông tin đối sánh (contrastive) — hỗn hợp supporting + refuting khiến model yếu bị confused nhiều hơn evidence hoàn toàn không liên quan.
+- RAG với model mạnh bị ảnh hưởng nặng hơn model yếu (-2.80 vs -0.80) về mặt tuyệt đối vì baseline cao hơn.
+- Cả 3 trường hợp đều cho thấy: evidence không phù hợp = giảm hiệu suất.
 
 ---
 
-## Analysis & Conclusions
+## Phân tích & Kết luận
 
-### Why evidence hurts instead of helps
+### Tại sao evidence gây hại thay vì giúp ích
 
 ```
-Paper assumption:  evidence → better fact-checking
-Reality:           evidence quality → determines outcome
+Giả định paper:    evidence → fact-checking tốt hơn
+Thực tế:           chất lượng evidence → quyết định kết quả
 
-                   ┌─ relevant evidence → helps (paper's ideal case)
-evidence quality ──┤
-                   └─ irrelevant evidence → hurts (real-world RAG case)
+                        ┌─ evidence liên quan (relevant) → giúp ích (trường hợp lý tưởng của paper)
+chất lượng evidence ────┤
+                        └─ evidence không liên quan (irrelevant) → gây hại (trường hợp RAG thực tế)
 ```
 
-### Root cause: LLMs are "evidence followers"
+### So sánh với kết luận của paper
 
-When given external evidence, LLMs prioritize it over parametric knowledge:
-- **Without evidence:** Model says "I cannot verify this claim" → correct answer → high score
-- **With irrelevant evidence:** Model tries to match claim to evidence → wrong conclusion → low score
+| Paper kết luận | Phát hiện của chúng tôi |
+|----------------|-------------------------|
+| Chế độ [evidence] cho điểm cao nhất | Chỉ đúng khi gold evidence **liên quan** và model **đủ mạnh** |
+| Evidence giúp fact-checking | Chỉ khi chất lượng retrieval cao |
+| Model mạnh hơn điểm tốt hơn | Đúng cho baseline; nhưng model mạnh cũng bị tổn thương tương đương khi evidence irrelevant |
+| [wisdom of crowds] ở mức trung bình | Evidence nhiễu vẫn confuse model yếu |
 
-This behavior is consistent across both weak (LLaMA-4-Scout) and strong (Gemini 2.5 Pro) models.
+### Ý nghĩa cho hệ thống RAG thực tế
 
-### Comparison with paper's findings
+1. **Naive RAG (truy xuất không lọc) có thể phản tác dụng** — khi retrieval quality thấp, tốt hơn là không cung cấp evidence
+2. **Retrieval relevance quan trọng hơn retrieval quantity** — 5 đoạn không liên quan tệ hơn 0 đoạn
+3. **LLM không tự đánh giá được relevance** — cả model mạnh lẫn yếu đều "tin" evidence được cung cấp
+4. **Cần cơ chế lọc relevance** trước khi đưa evidence vào prompt
 
-| Paper claims | Our findings |
-|-------------|--------------|
-| [evidence] mode scores highest | Only with **relevant** gold evidence |
-| Evidence helps fact-checking | Only when retrieval quality is high |
-| Stronger models score better | True for baseline; equally vulnerable to irrelevant evidence |
-| [wisdom of crowds] is middle ground | Noisy evidence still confuses weak models |
+### Hạn chế của nghiên cứu
 
-### Limitations of this study
+1. **Mẫu nhỏ** (10 claims) — kết quả có thể không tổng quát hóa được
+2. **Chỉ claims hư cấu** — claims thực tế sẽ có coverage tốt hơn trên Wikipedia
+3. **Không có relevance filtering** — RAG naive đưa tất cả passages mà không kiểm tra chất lượng
+4. **Một nguồn truy xuất duy nhất** (Wikipedia) — multi-source có thể tốt hơn
+5. **Tính nhất quán Judge** — cùng claim có thể bị chấm điểm khác nhau giữa các lần chạy (variance ở claims 3, 7)
 
-1. **Small sample size** (10 claims) — results may not generalize
-2. **Fictional claims only** — real claims would have better Wikipedia coverage
-3. **No relevance filtering** — naive RAG feeds all retrieved passages without quality check
-4. **Single retrieval source** (Wikipedia) — multi-source retrieval might perform better
-5. **Judge consistency** — same claim scored differently across runs (variance in claims 3, 7 for LLaMA)
+### Hướng cải thiện
 
-### Future improvements
-
-1. **Keyword extraction** — Extract key entities from claim before searching (reduces irrelevant results)
-2. **Relevance filtering** — Use LLM to assess whether retrieved evidence is relevant before injecting
-3. **Confidence threshold** — Discard evidence with low search relevance scores
-4. **Multi-source retrieval** — Combine Wikipedia + news APIs + fact-check databases
-5. **Real claims dataset** — Test with claims that have verifiable Wikipedia coverage
+1. **Trích xuất từ khóa (keyword extraction)** — Trích entity chính từ claim trước khi search (giảm kết quả không liên quan)
+2. **Lọc relevance** — Dùng LLM đánh giá evidence có liên quan không trước khi đưa vào prompt
+3. **Ngưỡng confidence** — Bỏ evidence có search relevance score thấp
+4. **Truy xuất đa nguồn** — Kết hợp Wikipedia + news APIs + fact-check databases
+5. **Dataset claims thực** — Test với claims có coverage thực trên Wikipedia
 
 ---
 
-## File Structure
+## Cấu trúc thư mục
 
 ```
 external/FACT-AUDIT/
 ├── scripts/
-│   ├── fact-audit.py              # Baseline (multi-provider, modified from paper)
-│   ├── fact-audit-rag.py          # Exp3: RAG comparison pipeline
-│   ├── fact-audit-exp2-gold-evidence.py  # Exp2: Gold evidence analysis
-│   ├── test_api.py                # API verification helper
-│   ├── .env                       # API keys and config
+│   ├── fact-audit.py              # Baseline (multi-provider, sửa từ paper gốc)
+│   ├── fact-audit-rag.py          # Exp3: Pipeline so sánh RAG
+│   ├── fact-audit-exp2-gold-evidence.py  # Exp2: Phân tích gold evidence
+│   ├── test_api.py                # Helper kiểm tra API
+│   ├── .env                       # API keys và cấu hình
 │   └── .env.example               # Template
 ├── result/
 │   ├── factaudit/
-│   │   └── ts-llama-4-scout-17b-16e-instruct/  # Baseline results
+│   │   └── ts-llama-4-scout-17b-16e-instruct/  # Kết quả baseline
 │   ├── exp2_gold_evidence/
-│   │   └── results.json           # Gold evidence experiment
+│   │   └── results.json           # Kết quả thực nghiệm gold evidence
 │   └── rag_comparison/
-│       └── rag_results.json       # RAG experiment (latest: Gemini 2.5 Pro)
-└── EXPERIMENT_REPORT.md           # This file
+│       └── rag_results.json       # Kết quả RAG (mới nhất: Gemini 2.5 Pro)
+└── EXPERIMENT_REPORT.md           # File này
 ```
 
 ---
 
-## How to reproduce
+## Cách tái tạo (reproduce)
 
 ```bash
-# 1. Setup
+# 1. Cài đặt
 cp scripts/.env.example scripts/.env
-# Fill in API keys
+# Điền API keys
 
-# 2. Run baseline (10 claims)
+# 2. Chạy baseline (10 claims)
 cd scripts
 python fact-audit.py --limit-points 2 --limit-steps 5
 
-# 3. Run RAG comparison
+# 3. Chạy so sánh RAG
 python fact-audit-rag.py --input ../result/factaudit/<target-slug>/complex_claim/version_1/log.json --limit 10
 
-# 4. Run gold evidence experiment
+# 4. Chạy thực nghiệm gold evidence
 python fact-audit-exp2-gold-evidence.py --input ../result/factaudit/<target-slug>/complex_claim/version_1/log.json
 ```
 
-Environment variables for target model selection:
+Biến môi trường để chọn target model:
 ```bash
-TARGET_PROVIDER=third-party  # or gemini
-TARGET_MODEL=ts/llama-4-scout-17b-16e-instruct  # or gemini-2.5-pro
+TARGET_PROVIDER=third-party  # hoặc gemini
+TARGET_MODEL=ts/llama-4-scout-17b-16e-instruct  # hoặc gemini-2.5-pro
 ```
