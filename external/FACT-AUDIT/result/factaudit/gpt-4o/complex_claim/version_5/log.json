@@ -1,0 +1,135 @@
+{
+    "init_points": [
+        "complex_claim:multiple_facts_combination",
+        "complex_claim:reasoning_with_structural_table_data",
+        "complex_claim:facts_change_over_time",
+        "complex_claim:subtle_factual_differences",
+        "complex_claim:adversarial_examples_in_factuality",
+        "complex_claim:internet_spread_and_journalistic_verification",
+        "complex_claim:domain-specific_claims",
+        "complex_claim:multilingual_claims",
+        "complex_claim:complex_claims_with_multi-step_reasoning"
+    ],
+    "new_points": [],
+    "complex_claim:multiple_facts_combination": {
+        "seed_prompts": [
+            {
+                "key_point": "Verify the factual accuracy of a claim containing multiple political facts.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The president signed a law that increased taxes, introduced new healthcare reforms, and provided subsidies for renewable energy.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Assess the combination of multiple medical and health facts.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "A recent study shows that eating blueberries improves memory, lowers blood pressure, and reduces the risk of cancer.",
+                    "auxiliary_info": [
+                        "1) According to Wikipedia: \"Several studies suggest that the consumption of blueberries can improve cognitive function and memory.\"",
+                        "2) \"Research has shown that anthocyanins in blueberries contribute to lowering blood pressure.\"",
+                        "3) \"There is mixed evidence about blueberries reducing the risk of cancer; some studies indicate potential benefits, while others do not find a significant correlation.\"",
+                        "4) \"Blueberries have been shown to have antioxidant properties, which may also contribute to their health benefits.\""
+                    ]
+                }
+            },
+            {
+                "key_point": "Determine the factuality of a claim about technology innovations considering multiple aspects.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The new smartphone model released this year features a 16-core processor, 5G connectivity, and a battery that lasts for 72 hours on a single charge.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Verify the factual integrity of an environmental claim involving multiple factors.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The initiative to plant a billion trees by 2030 aims to combat climate change, increase biodiversity, and enhance air quality.",
+                    "auxiliary_info": [
+                        "1) Wikipedia states: \"Reforestation efforts can play a significant role in combatting climate change by sequestering carbon dioxide.\"",
+                        "2) \"Increasing tree populations contribute to greater biodiversity as habitats are restored for various species.\"",
+                        "3) \"Trees significantly enhance air quality by absorbing pollutants.\"",
+                        "4) \"Planting trees has also been shown to reduce soil erosion and help with water retention in ecosystems.\""
+                    ]
+                }
+            },
+            {
+                "key_point": "Assess the validity of a claim in the context of social events and news.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "The recent concert in Central Park attracted more than 50,000 attendees, featured performances from over a dozen artists, and raised $5 million for charity.",
+                    "auxiliary_info": [
+                        "User1: \"I was at the concert, and it was huge! Definitely more than 50,000 people.\"",
+                        "User2: \"I'm not sure there were a dozen artists, I only counted 8.\"",
+                        "User3: \"Check the official reports, the charity said they raised $5 million.\"",
+                        "User4: \"The media coverage stated that over 50,000 people attended.\"",
+                        "User5: \"I heard there were actually 10 artists performing, but the concert was indeed massive!\""
+                    ]
+                }
+            },
+            {
+                "key_point": "Analyze the factuality of an economic claim involving multiple factors.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The new economic policy resulted in a 3% increase in GDP, a decrease in unemployment rates by 2%, and a reduction in the inflation rate to 1.5%.",
+                    "auxiliary_info": [
+                        "1) Wikipedia states: \"The new policy did contribute to a 3% increase in GDP according to the latest quarterly report.\"",
+                        "2) \"Unemployment rates have seen a decline, but it's officially reported at 1.8%, not 2%.\"",
+                        "3) \"The inflation rate has shown a reduction, reaching 1.5% as per government statistics.\"",
+                        "4) \"The policy has also been linked to increased consumer spending, although the exact figures are debated.\""
+                    ]
+                }
+            },
+            {
+                "key_point": "Check the historical accuracy of a claim combining multiple facts.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The Renaissance period saw the invention of the printing press, advancements in human anatomy studies, and the creation of iconic artworks like the Mona Lisa.",
+                    "auxiliary_info": [
+                        "1) Wikipedia: \"The printing press was indeed invented during the Renaissance by Johannes Gutenberg.\"",
+                        "2) \"Significant advancements in human anatomy were made by figures like Andreas Vesalius.\"",
+                        "3) \"The Mona Lisa, painted by Leonardo da Vinci, is one of the period's iconic artworks.\"",
+                        "4) \"The Renaissance period is characterized by a revival of learning, art, and culture across Europe.\""
+                    ]
+                }
+            },
+            {
+                "key_point": "Assess the completeness and accuracy of a scientific claim incorporating multiple findings.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "According to recent research, climate change is causing ice caps to melt faster, leading to more extreme weather events, and causing a decline in certain animal populations.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Verify the factual combination in an international news context.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "The new trade agreement between the two countries has boosted export activities, improved diplomatic relations, and decreased trade tariffs by 5%.",
+                    "auxiliary_info": [
+                        "User1: \"Exports have definitely increased since the agreement was signed.\"",
+                        "User2: \"I read an article stating that tariffs decreased by 4%, not 5%.\"",
+                        "User3: \"Diplomatic relations have improved according to both countries' foreign ministries.\"",
+                        "User4: \"The trade agreement, it's mainly about reducing tariffs and boosting exports.\"",
+                        "User5: \"I've seen reports confirming the boost in exports, but not everyone agrees on the tariff reduction figure.\""
+                    ]
+                }
+            },
+            {
+                "key_point": "Evaluate the legal accuracy of a claim involving multiple regulations.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The recently passed law has increased penalties for cybercrimes, established new data privacy regulations, and requires companies to report data breaches within 72 hours.",
+                    "auxiliary_info": [
+                        "1) Wikipedia: \"The new law indeed increased penalties for cybercrimes significantly.\"",
+                        "2) \"There are newly established data privacy regulations introduced in the law.\"",
+                        "3) \"The requirement for companies to report data breaches within 72 hours is correctly part of the new legislation.\"",
+                        "4) \"The law also addresses other areas of digital security and compliance requirements for businesses.\""
+                    ]
+                }
+            }
+        ]
+    }
+}

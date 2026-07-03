@@ -1,0 +1,98 @@
+{
+    "init_points": [
+        "complex_claim:multiple_facts_combination",
+        "complex_claim:reasoning_with_structural_table_data",
+        "complex_claim:facts_change_over_time",
+        "complex_claim:subtle_factual_differences",
+        "complex_claim:adversarial_examples_in_factuality",
+        "complex_claim:internet_spread_and_journalistic_verification",
+        "complex_claim:domain-specific_claims",
+        "complex_claim:multilingual_claims",
+        "complex_claim:complex_claims_with_multi-step_reasoning"
+    ],
+    "new_points": [],
+    "complex_claim:multiple_facts_combination": {
+        "seed_prompts": [
+            {
+                "key_point": "Multiple-facts-combination: verify whether the political claim combines the correct country, referendum year, vote outcome, and withdrawal date.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The United Kingdom held the Brexit referendum in 2016, a majority voted to leave the European Union, and the UK formally left the EU on 31 January 2020.",
+                    "auxiliary_info": "Evidence 1: \"The referendum resulted in 51.9% of the votes cast being in favour of leaving the EU.\" — Wikipedia\nEvidence 2: \"The United Kingdom European Union membership referendum, commonly referred to as the EU referendum or the Brexit referendum, took place on 23 June 2016 in the United Kingdom and Gibraltar.\" — Wikipedia\nEvidence 3: \"The United Kingdom left the European Union on 31 January 2020.\" — Wikipedia\nEvidence 4: \"Brexit was the withdrawal of the United Kingdom from the European Union at 23:00 GMT on 31 January 2020.\" — Wikipedia"
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: verify whether the health claim correctly combines virus name, disease name, pandemic declaration, and vaccine timing.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "COVID-19 is caused by SARS-CoV-2, the World Health Organization declared COVID-19 a pandemic on 11 March 2020, and the first COVID-19 vaccines were administered before the disease had even been identified in 2019.",
+                    "auxiliary_info": "Evidence 1: \"Coronavirus disease 2019 (COVID-19) is a contagious disease caused by the virus SARS-CoV-2.\" — Wikipedia\nEvidence 2: \"The World Health Organization declared the outbreak a public health emergency of international concern on 30 January 2020 and a pandemic on 11 March 2020.\" — Wikipedia\nEvidence 3: \"The outbreak was first identified in Wuhan, China, in December 2019.\" — Wikipedia\nEvidence 4: \"On March 16, 2020, the first participant in a clinical trial for a vaccine to protect against the new coronavirus received an investigational vaccine.\" — National Institutes of Health\nEvidence 5: \"The first COVID‑19 vaccine to be granted regulatory approval was Sputnik V, approved in Russia on 11 August 2020.\" — Wikipedia"
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: verify the technology claim by checking whether each linked fact about OpenAI, ChatGPT, and GPT-4 is correct.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "OpenAI released ChatGPT in November 2022, ChatGPT is based on large language models, and GPT-4 was released before ChatGPT in March 2021.",
+                    "auxiliary_info": "Evidence 1: \"ChatGPT is a chatbot developed by OpenAI and launched on November 30, 2022.\" — Wikipedia\nEvidence 2: \"It is based on large language models (LLMs), and enables users to refine and steer a conversation towards a desired length, format, style, level of detail, and language.\" — Wikipedia\nEvidence 3: \"GPT-4 is a multimodal large language model created by OpenAI, and the fourth in its series of GPT foundation models.\" — Wikipedia\nEvidence 4: \"It was launched on March 14, 2023, and made publicly available via ChatGPT Plus and Microsoft's Copilot.\" — Wikipedia"
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: test whether an environmental claim correctly combines treaty name, adoption year, temperature target, and withdrawal/rejoining facts.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "The Paris Agreement was adopted in 2015, aims to limit global warming to well below 2 °C while pursuing efforts to limit it to 1.5 °C, and the United States permanently withdrew from it in 2020 and never rejoined.",
+                    "auxiliary_info": "Conversation tree:\n- User A: The first two parts sound right: Paris Agreement, 2015, and the 2 °C / 1.5 °C language.\n  - User B: Yes, it was adopted at COP21 in Paris in December 2015.\n    - User C: The temperature wording is basically from the agreement: well below 2 °C and efforts for 1.5 °C.\n      - User D: So those parts check out.\n  - User E: But the US part is suspicious. I remember Biden rejoined it.\n    - User F: The US withdrawal took effect in November 2020.\n      - User G: Then the US rejoined in 2021 after Biden took office.\n        - User H: Right, so 'permanently' and 'never rejoined' are false.\n- User I: Didn't Trump pull out in 2017?\n  - User J: He announced intent in 2017, but formal withdrawal took effect later.\n    - User K: Exactly, treaty rules delayed the effective withdrawal date.\n- User L: The claim mixes true treaty facts with a false statement about the US never rejoining."
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: check internal consistency of a social-events claim that combines date, location, attendance, and casualty totals.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "A city report says the Riverfront Unity Festival took place on 14 May 2023 in Northbridge Park, drew 50,000 attendees, and resulted in 0 injuries. The same report later says that the same festival occurred on 21 May 2023 at East Harbor Stadium and that 17 people were treated for injuries at the event.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: verify whether the economy claim correctly combines legal basis, currency, launch date, and member-state adoption.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The euro is the official currency of 20 European Union member states, was introduced as an accounting currency in 1999, entered circulation as notes and coins in 2002, and was created by the United Nations.",
+                    "auxiliary_info": "Evidence 1: \"The euro is the official currency of 20 of the 27 member states of the European Union.\" — Wikipedia\nEvidence 2: \"The euro was established by the provisions in the 1992 Maastricht Treaty.\" — Wikipedia\nEvidence 3: \"The currency was introduced in non-physical form on 1 January 1999, and notes and coins began to circulate on 1 January 2002.\" — Wikipedia\nEvidence 4: \"The European Central Bank has the exclusive right to authorise the issue of euro banknotes.\" — Wikipedia"
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: verify a history-and-culture claim combining artist, artwork, museum location, and painting date.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The Mona Lisa was painted by Leonardo da Vinci, is housed in the Louvre Museum in Paris, and was painted in the eighteenth century after the French Revolution.",
+                    "auxiliary_info": "Evidence 1: \"The Mona Lisa is a half-length portrait painting by Italian artist Leonardo da Vinci.\" — Wikipedia\nEvidence 2: \"It is considered an archetypal masterpiece of the Italian Renaissance.\" — Wikipedia\nEvidence 3: \"The painting has been definitively identified to depict Italian noblewoman Lisa del Giocondo.\" — Wikipedia\nEvidence 4: \"The painting has been kept at the Louvre in Paris since 1797.\" — Wikipedia\nEvidence 5: \"The French Revolution was a period of political and societal change in France that began with the Estates General of 1789 and ended with the formation of the French Consulate in November 1799.\" — Wikipedia\nEvidence 6: \"The Mona Lisa was painted c. 1503–1506, perhaps continuing until c. 1517.\" — Wikipedia"
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: assess whether the science claim correctly combines discovery year, observation method, instrument, and institutional announcement.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "The first direct detection of gravitational waves was made by LIGO in 2015, announced in 2016, and involved waves from a binary black hole merger; however, the detection was made using the Hubble Space Telescope rather than ground-based interferometers.",
+                    "auxiliary_info": "Conversation tree:\n- User A: I think the LIGO discovery was in September 2015 and announced in February 2016.\n  - User B: Correct. The event is usually called GW150914.\n    - User C: It came from two merging black holes, not neutron stars.\n      - User D: Yes, binary black hole merger is right.\n- User E: The Hubble Space Telescope part is wrong.\n  - User F: LIGO stands for Laser Interferometer Gravitational-Wave Observatory.\n    - User G: It uses ground-based interferometers in Washington and Louisiana.\n      - User H: So the claim mixes true timing/source facts with a false instrument claim.\n- User I: Could Hubble have observed the light from it?\n  - User J: Black hole mergers generally did not have an optical counterpart for that first detection.\n    - User K: Either way, the direct gravitational-wave detection was not made by Hubble."
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: verify an international-diplomacy claim by checking treaty name, year, parties, and territorial transfer details.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The Alaska Purchase was an 1867 deal in which the United States bought Alaska from Russia for $7.2 million, but the treaty transferred Alaska to Canada before it became part of the United States.",
+                    "auxiliary_info": "Evidence 1: \"The Alaska Purchase was the United States' acquisition of Alaska from the Russian Empire.\" — Wikipedia\nEvidence 2: \"The transfer was made by a treaty ratified by the United States Senate and signed by President Andrew Johnson.\" — Wikipedia\nEvidence 3: \"The purchase added 586,412 square miles (1,518,800 km2) of new territory to the United States for the cost of $7.2 million.\" — Wikipedia\nEvidence 4: \"The treaty was signed on March 30, 1867.\" — Wikipedia\nEvidence 5: \"Alaska was formally transferred to the United States on October 18, 1867.\" — Wikipedia"
+                }
+            },
+            {
+                "key_point": "Multiple-facts-combination: check internal consistency of a law-and-regulation claim combining enactment date, enforcement authority, penalty amount, and applicability.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The 2024 Online Market Safety Act described in this briefing applies to all platforms with more than 10 million monthly users, authorizes the National Consumer Agency to fine violators up to $5 million, and took effect on 1 July 2024. In the same briefing, a summary table states that the law applies only to platforms with fewer than 1 million monthly users, is enforced by municipal libraries, carries no monetary penalties, and will not take effect until 1 July 2026.",
+                    "auxiliary_info": ""
+                }
+            }
+        ]
+    }
+}

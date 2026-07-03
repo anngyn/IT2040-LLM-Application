@@ -1,0 +1,98 @@
+{
+    "init_points": [
+        "complex_claim:multiple_facts_combination",
+        "complex_claim:reasoning_with_structural_table_data",
+        "complex_claim:facts_change_over_time",
+        "complex_claim:subtle_factual_differences",
+        "complex_claim:adversarial_examples_in_factuality",
+        "complex_claim:internet_spread_and_journalistic_verification",
+        "complex_claim:domain-specific_claims",
+        "complex_claim:multilingual_claims",
+        "complex_claim:complex_claims_with_multi-step_reasoning"
+    ],
+    "new_points": [],
+    "complex_claim:multiple_facts_combination": {
+        "seed_prompts": [
+            {
+                "key_point": "Testing the model's ability to verify a complex claim combining multiple distinct factual assertions about a legislative bill against provided evidence, specifically identifying which parts are true and which are false, demonstrating understanding of 'multiple_facts_combination'.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The recent bill passed by Congress, H.R. 1234, mandates a 15% increase in federal income tax for all citizens, allocates $50 billion to renewable energy projects, and establishes a new national holiday on the first Monday of October.",
+                    "auxiliary_info": "Evidence 1: The Congressional Record for H.R. 1234, officially titled the 'Sustainable Future Act,' indicates that the bill proposes a 2% increase in corporate tax rates, not federal income tax for all citizens. Evidence 2: Section 3 of the 'Sustainable Future Act' (H.R. 1234) explicitly earmarks $50 billion for investment in solar, wind, and geothermal energy initiatives. Evidence 3: A separate legislative proposal, S.B. 567, introduced in the Senate, aims to establish 'National Unity Day' on the first Monday of October, but H.R. 1234 does not contain any provisions for a new national holiday. Evidence 4: H.R. 1234 passed the House of Representatives on March 15, 2023, and is currently awaiting a vote in the Senate."
+                }
+            },
+            {
+                "key_point": "Assessing the model's capacity to discern the factuality of a health claim involving multiple assertions (detox, metabolism, cold prevention) by analyzing diverse and sometimes conflicting opinions within a social media conversation tree, showcasing its handling of 'multiple_facts_combination'.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "Drinking a gallon of lemon water daily detoxifies the liver, boosts metabolism by 20%, and prevents all common colds due to its high vitamin C content.",
+                    "auxiliary_info": "User A: 'Heard this from a friend! Lemon water is a miracle cure!'\n  User B: 'Not sure about 'all common colds,' but vitamin C is good for immunity. The detox claim sounds a bit much though.'\n    User C: 'My doctor said 'detox' is mostly a myth. Your liver does that naturally. And 20% metabolism boost? That's a huge claim without scientific backing.'\n      User D: 'Yeah, I tried it for a month, felt no difference in metabolism. And I still got a cold.'\n    User E: 'Lemon water is hydrating, which is good, but it's not a magic bullet for everything. Be careful with too much acidity for your teeth too.'\n  User F: 'I read an article that said while vitamin C is important, it doesn't *prevent* all colds, just might shorten duration. And metabolism claims are often exaggerated.'"
+                }
+            },
+            {
+                "key_point": "Evaluating the model's ability to identify inherent inconsistencies or highly improbable claims within a single statement about a new technology, specifically concerning the combination of extreme performance and ultra-low power consumption, demonstrating its understanding of 'multiple_facts_combination'.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The new 'Quantum Leap' processor from TechCorp features 128 cores, operates at 50 GHz, and consumes only 5 watts of power, making it the most efficient and powerful chip ever created.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Testing the model's capacity to fact-check a complex environmental claim involving multiple interconnected assertions (deforestation rate, CO2 impact, primary drivers) against diverse pieces of evidence, highlighting its proficiency with 'multiple_facts_combination'.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "Deforestation in the Amazon rainforest has increased by 30% in the last year, leading to a 5% global rise in CO2 emissions, and is primarily driven by illegal logging for furniture production.",
+                    "auxiliary_info": "Evidence 1: According to the Brazilian National Institute for Space Research (INPE), deforestation in the Amazon decreased by 22.3% from August 2022 to July 2023 compared to the previous year. Evidence 2: While Amazon deforestation contributes to global CO2 emissions, a 5% global rise from one year's Amazon deforestation alone is an overestimation; global emissions are influenced by many factors, with fossil fuel combustion being the largest contributor. Evidence 3: Illegal logging is a significant driver of Amazon deforestation, but agricultural expansion, particularly cattle ranching and soy cultivation, is widely recognized as the dominant cause. Evidence 4: The Amazon rainforest plays a crucial role in regulating global climate patterns and biodiversity."
+                }
+            },
+            {
+                "key_point": "Evaluating the model's ability to assess the accuracy of a social event summary containing multiple factual claims (participant count, world record, funds raised) by synthesizing information from a social media conversation tree, demonstrating its skill with 'multiple_facts_combination'.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "During the recent city marathon, over 50,000 runners participated, a new world record was set for the fastest male runner, and the event raised $10 million for local charities.",
+                    "auxiliary_info": "User A: 'Amazing marathon! So many people and a new record!'\n  User B: 'I was there, it felt huge, but 50,000? The official site said around 35,000 registered runners.'\n    User C: 'Yeah, 35k sounds right. And the world record? Eliud Kipchoge's record is still standing, no one broke it here. The winner was fast, but not world record fast.'\n      User D: 'The local news reported the winner's time, it was a course record, not a world record. Big difference.'\n    User E: 'The charity goal was $5 million, and they announced they exceeded it, raising about $6.5 million. Still great, but not $10 million.'\n  User F: 'It was a great event for the city regardless of the exact numbers, but we should stick to facts.'"
+                }
+            },
+            {
+                "key_point": "Testing the model's capability to verify a complex economic claim combining multiple statistical assertions (unemployment rate, income increase) and a causal link against detailed economic evidence, showcasing its understanding of 'multiple_facts_combination'.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The national unemployment rate has dropped to a 50-year low of 2.5%, leading to a 10% increase in average household income, and is primarily due to recent government tax cuts for corporations.",
+                    "auxiliary_info": "Evidence 1: The Bureau of Labor Statistics reported the national unemployment rate for the most recent quarter as 3.7%, which, while low, is not a 50-year low and not 2.5%. Evidence 2: While real median household income has seen modest growth in recent years, a 10% increase in average household income in a single period is not supported by current economic data; growth has been closer to 1-2% annually. Evidence 3: Economic analysts attribute changes in the unemployment rate and household income to a complex interplay of factors including labor market dynamics, technological advancements, and global economic conditions, rather than solely to corporate tax cuts. Evidence 4: Government tax policies can influence economic activity, but their direct impact on specific metrics like unemployment and income is often debated among economists."
+                }
+            },
+            {
+                "key_point": "Assessing the model's ability to identify historical inaccuracies within a complex claim, specifically focusing on the combination of correct and incorrect details regarding Caesar's assassination location and the stated reasons for it, demonstrating its handling of 'multiple_facts_combination'.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "Julius Caesar was assassinated in the Roman Forum by Brutus and Cassius on the Ides of March in 44 BC, primarily because he declared himself Emperor and abolished the Senate.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Testing the model's ability to fact-check a complex scientific claim involving multiple health and regulatory assertions about GM food against established scientific consensus and regulatory information, highlighting its proficiency with 'multiple_facts_combination'.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "A new study published in 'Nature' reveals that consuming genetically modified (GM) corn causes severe allergic reactions in 10% of the population, leads to a 50% increase in cancer risk, and has been banned in all European Union countries.",
+                    "auxiliary_info": "Evidence 1: Numerous scientific reviews and regulatory bodies, including the European Food Safety Authority (EFSA) and the U.S. National Academies of Sciences, Engineering, and Medicine, have concluded that currently approved GM crops are as safe as their conventional counterparts and do not pose increased risks of allergies or cancer. Evidence 2: While the European Union has strict regulations on GM crops and their cultivation is limited, the import and sale of certain approved GM products (like corn for feed) are permitted, and there is no blanket ban on all GM corn. Evidence 3: The study mentioned in 'Nature' might refer to a specific, highly specialized research finding, but its broad generalization to all GM corn and its effects is not supported by the wider scientific consensus. Evidence 4: All GM crops undergo rigorous safety assessments before being approved for commercial use in most countries."
+                }
+            },
+            {
+                "key_point": "Assessing the model's capability to evaluate the factuality of a complex international news claim containing multiple significant geopolitical assertions by analyzing the skepticism and requests for verification within a social media discussion, showcasing its understanding of 'multiple_facts_combination'.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "Country X has officially withdrawn from the United Nations, declared war on its neighboring Country Y, and announced a new alliance with Country Z, effective immediately.",
+                    "auxiliary_info": "User A: 'Breaking news! Country X is making huge moves!'\n  User B: 'Wait, withdraw from UN? That's a massive step. I haven't seen any official UN statement on that.'\n    User C: 'Exactly. And declaring war is usually a formal process, not just an announcement. There would be immediate international condemnation and sanctions.'\n      User D: 'My news feed shows Country X's foreign minister just had a diplomatic meeting with Country Y's ambassador yesterday. Doesn't sound like war.'\n    User E: 'The 'new alliance with Country Z' might be a misinterpretation of a trade agreement they signed last week. Not a military alliance.'\n  User F: 'This sounds like a lot of speculation. We need official sources before believing any of these claims.'"
+                }
+            },
+            {
+                "key_point": "Evaluating the model's ability to identify highly improbable or unconstitutional legal claims within a single statement, specifically concerning the combination of warrantless data sharing and severe penalties for VPN use, demonstrating its understanding of 'multiple_facts_combination'.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "Under the new 'Digital Privacy Act,' all internet service providers are now required to share user browsing history with government agencies without a warrant, and individuals can be fined up to $10,000 for using a VPN.",
+                    "auxiliary_info": ""
+                }
+            }
+        ]
+    }
+}

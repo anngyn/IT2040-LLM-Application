@@ -39,30 +39,33 @@ else:
     print("HF_HUB_CACHE is not set.")
 
 # --- API config ---
-# GPT_PROVIDER=openai → use OPENAI_API_KEY directly
-# GPT_PROVIDER=third-party → use LLAMA_API_KEY + LLAMA_BASE_URL for GPT calls too
-GPT_PROVIDER = os.getenv('GPT_PROVIDER', 'third-party')
+# Optimizer: generates ref answers + test cases (Gemini = cheap + fast)
+OPTIMIZER_PROVIDER = os.getenv('OPTIMIZER_PROVIDER', 'gemini')  # "gemini" | "openai" | "third-party"
+OPTIMIZER_MODEL = os.getenv('OPTIMIZER_MODEL', 'gemini-2.5-flash')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta'
 
-if GPT_PROVIDER == 'openai':
-    API_KEY_gpt = os.getenv('OPENAI_API_KEY', 'sk-xxxxxx')
-    API_URL_gpt = os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions')
-else:
-    API_KEY_gpt = os.getenv('LLAMA_API_KEY', os.getenv('OPENAI_API_KEY', 'sk-xxxxxx'))
-    _base = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
-    API_URL_gpt = _base.rstrip('/') + '/chat/completions'
+# Judge: scores target answers (GPT = paper-faithful, fixed)
+JUDGE_PROVIDER = os.getenv('JUDGE_PROVIDER', 'gemini')  # "gemini" | "openai" | "third-party"
+JUDGE_MODEL = os.getenv('JUDGE_MODEL', 'gemini-2.5-flash')
 
-HEADERS_gpt = {
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {API_KEY_gpt}"
-}
+# OpenAI config (for judge/optimizer if provider=openai)
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'sk-xxxxxx')
+OPENAI_API_URL = os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions')
 
-GPT_MODEL = os.getenv('GPT_MODEL', 'gx/gpt-5.5')
-GPT_JUDGE_MODEL = os.getenv('GPT_JUDGE_MODEL', GPT_MODEL)
+# Third-party config (OpenAI-compatible, for judge/optimizer/target)
+THIRD_PARTY_KEY = os.getenv('LLAMA_API_KEY', OPENAI_API_KEY)
+THIRD_PARTY_BASE = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
+THIRD_PARTY_URL = THIRD_PARTY_BASE.rstrip('/') + '/chat/completions'
 
-# --- LLaMA API fallback config (used when no GPU) ---
-LLAMA_API_KEY = os.getenv('LLAMA_API_KEY', API_KEY_gpt)
-LLAMA_BASE_URL = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
-LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama-3.3-70b-versatile')
+# Target model: the LLM being evaluated (switch between llama/gemini/gpt)
+TARGET_PROVIDER = os.getenv('TARGET_PROVIDER', 'third-party')  # "gemini" | "openai" | "third-party"
+TARGET_MODEL = os.getenv('TARGET_MODEL', os.getenv('LLAMA_MODEL', 'llama-3.3-70b-versatile'))
+
+# Legacy compat
+LLAMA_API_KEY = THIRD_PARTY_KEY
+LLAMA_BASE_URL = THIRD_PARTY_BASE
+LLAMA_MODEL = TARGET_MODEL
 
 device = 'cuda:0' if HAS_GPU else 'cpu'
 
@@ -70,51 +73,101 @@ device = 'cuda:0' if HAS_GPU else 'cpu'
 model_path = os.getenv('LOCAL_MODEL_PATH', 'meta-llama/Llama-2-13b-chat-hf')
 
 
-def gpt4o_turbo_generate(text, temp=None, presence_penalty=None):
-    _step_counter['gpt4o'] += 1
-    num = 50
-    res = ""
-    while num > 0 and len(res)==0:
+def _gemini_generate(text, model_name, temp=None):
+    """Call Gemini API directly."""
+    url = f"{GEMINI_API_URL}/models/{model_name}:generateContent?key={GEMINI_API_KEY}"
+    payload = {
+        "contents": [{"parts": [{"text": text}]}],
+    }
+    if temp is not None:
+        payload["generationConfig"] = {"temperature": temp}
+
+    num = 20
+    while num > 0:
         try:
-            payload = {"model": GPT_MODEL, "messages": [{"role": "user", "content": text}]}
-            if temp:
-                payload['temperature'] = temp
-            data = json.dumps(payload)
-            response = requests.post(API_URL_gpt, headers=HEADERS_gpt, data=data)
+            response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=120)
+            result = response.json()
+            if 'candidates' not in result:
+                _log('GEMINI', f"API error (status={response.status_code}): {result}")
+                raise KeyError('candidates')
+            return result['candidates'][0]['content']['parts'][0]['text']
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            _log('GEMINI', f"retry {20-num+1}/20 - {e}")
+            time.sleep(5)
+            num -= 1
+    return ""
+
+
+def _openai_generate(text, model_name, temp=None):
+    """Call OpenAI API directly."""
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {OPENAI_API_KEY}"}
+    payload = {"model": model_name, "messages": [{"role": "user", "content": text}]}
+    if temp is not None:
+        payload['temperature'] = temp
+    num = 50
+    while num > 0:
+        try:
+            response = requests.post(OPENAI_API_URL, headers=headers, data=json.dumps(payload), timeout=120)
             response_json = response.json()
             if 'choices' not in response_json:
-                _log('GPT', f"API error (status={response.status_code}): {response_json}")
+                _log('OPENAI', f"API error (status={response.status_code}): {response_json}")
                 raise KeyError('choices')
-            res = response_json['choices'][0]['message']['content']
+            return response_json['choices'][0]['message']['content']
+        except KeyboardInterrupt:
+            raise
         except Exception as e:
-            _log('GPT', f"retry {50-num+1}/50 - {e}")
+            _log('OPENAI', f"retry {50-num+1}/50 - {e}")
             time.sleep(10)
             num -= 1
+    return ""
 
-    return res
+
+def _third_party_generate(text, model_name, temp=None):
+    """Call third-party OpenAI-compatible API."""
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {THIRD_PARTY_KEY}"}
+    payload = {"model": model_name, "messages": [{"role": "user", "content": text}]}
+    if temp is not None:
+        payload['temperature'] = temp
+    num = 20
+    while num > 0:
+        try:
+            response = requests.post(THIRD_PARTY_URL, headers=headers, data=json.dumps(payload), timeout=120)
+            response_json = response.json()
+            if 'choices' not in response_json:
+                _log('3RD', f"API error (status={response.status_code}): {response_json}")
+                raise KeyError('choices')
+            return response_json['choices'][0]['message']['content']
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            _log('3RD', f"retry {20-num+1}/20 - {e}")
+            time.sleep(5)
+            num -= 1
+    return ""
+
+
+def _call(provider, model, text, temp=None):
+    """Route call to correct provider."""
+    if provider == 'gemini':
+        return _gemini_generate(text, model, temp)
+    elif provider == 'openai':
+        return _openai_generate(text, model, temp)
+    else:
+        return _third_party_generate(text, model, temp)
+
+
+def gpt4o_turbo_generate(text, temp=None, presence_penalty=None):
+    """Optimizer: generate ref answers, test cases."""
+    _step_counter['gpt4o'] += 1
+    return _call(OPTIMIZER_PROVIDER, OPTIMIZER_MODEL, text, temp)
+
 
 def gpt4omini_turbo_generate(text, temp=None, presence_penalty=None):
+    """Judge: score target answers."""
     _step_counter['gpt4o_mini'] += 1
-    num = 50
-    res = ""
-    while num > 0 and len(res)==0:
-        try:
-            payload = {"model": GPT_JUDGE_MODEL, "messages": [{"role": "user", "content": text}]}
-            if temp:
-                payload['temperature'] = temp
-            data = json.dumps(payload)
-            response = requests.post(API_URL_gpt, headers=HEADERS_gpt, data=data)
-            response_json = response.json()
-            if 'choices' not in response_json:
-                _log('GPT-JUDGE', f"API error (status={response.status_code}): {response_json}")
-                raise KeyError('choices')
-            res = response_json['choices'][0]['message']['content']
-        except Exception as e:
-            _log('GPT-JUDGE', f"retry {50-num+1}/50 - {e}")
-            time.sleep(10)
-            num -= 1
-
-    return res
+    return _call(JUDGE_PROVIDER, JUDGE_MODEL, text, temp)
 
 
 def fix_json_string(json_string):
@@ -145,29 +198,11 @@ def find_dict(answer):
     return data
 
 
-def gpt4o_generate(text, temp=1.0):  # model   gpt-4
+def gpt4o_generate(text, temp=1.0):
+    """Optimizer (used for seed gen with JSON output, strip newlines)."""
     _step_counter['gpt4o'] += 1
-    num = 50
-    res = ""
-    while num > 0 and len(res)==0:
-        try:
-            payload = {"model": GPT_MODEL, "messages": [{"role": "user", "content": text}]}
-            if temp:
-                payload['temperature'] = temp
-            data = json.dumps(payload)
-            response = requests.post(API_URL_gpt, headers=HEADERS_gpt, data=data)
-
-            response_json = response.json()
-            if 'choices' not in response_json:
-                _log('GPT4o', f"API error (status={response.status_code}): {response_json}")
-                raise KeyError('choices')
-            res = response_json['choices'][0]['message']['content'].replace('\n','')
-        except Exception as e:
-            _log('GPT4o', f"retry {50-num+1}/50 - {e}")
-            time.sleep(5)
-            num -= 1
-    
-    return res
+    res = _call(OPTIMIZER_PROVIDER, OPTIMIZER_MODEL, text, temp)
+    return res.replace('\n', '') if res else ""
 
 
 
@@ -184,61 +219,36 @@ if HAS_GPU:
     model = AutoModelForCausalLM.from_pretrained(model_path).half().eval().to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
 else:
-    print(f"[API mode] No GPU detected. Using LLaMA via API: {LLAMA_BASE_URL} model={LLAMA_MODEL}")
+    print(f"[API mode] Target: {TARGET_MODEL} via {THIRD_PARTY_BASE}")
 
-print(f"[Config] GPT provider={GPT_PROVIDER} | model={GPT_MODEL} | judge={GPT_JUDGE_MODEL}")
-print(f"[Config] GPT endpoint: {API_URL_gpt}")
+print(f"[Config] Optimizer: provider={OPTIMIZER_PROVIDER} model={OPTIMIZER_MODEL}")
+print(f"[Config] Judge: provider={JUDGE_PROVIDER} model={JUDGE_MODEL}")
+print(f"[Config] Target: model={TARGET_MODEL} via third-party")
 
 
-def _llama_api_generate(text):
-    """Call LLaMA through an OpenAI-compatible API endpoint."""
+def _target_api_generate(text):
+    """Call target model through third-party provider (always)."""
     _step_counter['llama'] += 1
-    url = LLAMA_BASE_URL.rstrip('/') + '/chat/completions'
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {LLAMA_API_KEY}"
-    }
-    payload = json.dumps({
-        "model": LLAMA_MODEL,
-        "messages": [{"role": "user", "content": text}],
-        "temperature": 0.0,
-        "max_tokens": 1024
-    })
-    num = 10
-    while num > 0:
-        try:
-            response = requests.post(url, headers=headers, data=payload)
-            result = response.json()
-            if 'choices' not in result:
-                _log('LLaMA', f"API error (status={response.status_code}): {result}")
-                raise KeyError('choices')
-            return result['choices'][0]['message']['content'].strip()
-        except Exception as e:
-            _log('LLaMA', f"retry {10-num+1}/10 - {e}")
-            time.sleep(5)
-            num -= 1
-    return ""
+    return _third_party_generate(text, TARGET_MODEL, temp=0)
 
 
 def llama2_generate(text):
     if not HAS_GPU:
-        return _llama_api_generate(text)
+        return _target_api_generate(text)
     input_text = "<s>[INST] {} [/INST]".format(text)
     model_inputs = tokenizer(input_text, return_tensors="pt").to(device)
     output = model.generate(**model_inputs, max_new_tokens=1024, do_sample=False, num_beams=1)
-    resp = tokenizer.decode(output[0], skip_special_tokens=True).split('[/INST]')[1].strip()
-    return resp
+    return tokenizer.decode(output[0], skip_special_tokens=True).split('[/INST]')[1].strip()
 
 
 def llama3_generate(text):
     if not HAS_GPU:
-        return _llama_api_generate(text)
+        return _target_api_generate(text)
     terminators = [tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|eot_id|>")]
     input_text = "<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n{}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n".format(text)
     model_inputs = tokenizer(input_text, return_tensors="pt").to(device)
     output = model.generate(**model_inputs, max_new_tokens=1024, do_sample=False, num_beams=1, eos_token_id=terminators)
-    resp = tokenizer.decode(output[0][model_inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
-    return resp
+    return tokenizer.decode(output[0][model_inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
 
 
 def gen_fact_problem_template(question):
@@ -825,7 +835,8 @@ if __name__ == '__main__':
     points = categories[main_cat]  #test scenario in the taxonomy
     test_points = [f'{main_cat}:{point}' for point in points]
     
-    output_dir = f"../result/factaudit/gpt-4o/{args.category.lower().replace(' ', '_')}/" #for each category under the taxonomy, create the filefolder
+    target_slug = TARGET_MODEL.replace('/', '-')
+    output_dir = f"../result/factaudit/{target_slug}/{args.category.lower().replace(' ', '_')}/"
 
     num = 0
     output_path = ''
@@ -841,7 +852,18 @@ if __name__ == '__main__':
     
     os.makedirs(output_path, exist_ok=True)
 
-    final_data = {'init_points': test_points, 'new_points': []}  #knowledge points under this category
+    final_data = {
+        'config': {
+            'target_model': TARGET_MODEL,
+            'target_provider': TARGET_PROVIDER,
+            'optimizer_model': OPTIMIZER_MODEL,
+            'optimizer_provider': OPTIMIZER_PROVIDER,
+            'judge_model': JUDGE_MODEL,
+            'judge_provider': JUDGE_PROVIDER,
+        },
+        'init_points': test_points,
+        'new_points': [],
+    }
     idx = 0
     
     while idx < len(test_points) and idx < args.limit_points:

@@ -46,32 +46,31 @@ if not os.getenv('FORCE_API_MODE'):
 if HAS_GPU:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# --- API config ---
-# GPT provider: set GPT_PROVIDER=openai (direct) or GPT_PROVIDER=third-party (via LLAMA_BASE_URL)
-GPT_PROVIDER = os.getenv('GPT_PROVIDER', 'third-party')  # "openai" or "third-party"
+# --- API config (same as fact-audit.py) ---
+# Optimizer
+OPTIMIZER_PROVIDER = os.getenv('OPTIMIZER_PROVIDER', 'gemini')
+OPTIMIZER_MODEL = os.getenv('OPTIMIZER_MODEL', 'gemini-2.5-flash')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta'
 
-if GPT_PROVIDER == 'openai':
-    API_KEY_gpt = os.getenv('OPENAI_API_KEY', 'sk-xxxxxx')
-    API_URL_gpt = os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions')
-else:
-    API_KEY_gpt = os.getenv('LLAMA_API_KEY', os.getenv('OPENAI_API_KEY', 'sk-xxxxxx'))
-    _base = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
-    API_URL_gpt = _base.rstrip('/') + '/chat/completions'
+# Judge
+JUDGE_PROVIDER = os.getenv('JUDGE_PROVIDER', 'gemini')
+JUDGE_MODEL = os.getenv('JUDGE_MODEL', 'gemini-2.5-flash')
 
-HEADERS_gpt = {
-    "Content-Type": "application/json",
-    "Authorization": f"Bearer {API_KEY_gpt}"
-}
+# OpenAI
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'sk-xxxxxx')
+OPENAI_API_URL = os.getenv('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions')
 
-GPT_MODEL = os.getenv('GPT_MODEL', 'gx/gpt-5.5')
-GPT_JUDGE_MODEL = os.getenv('GPT_JUDGE_MODEL', GPT_MODEL)
+# Third-party (target model)
+THIRD_PARTY_KEY = os.getenv('LLAMA_API_KEY', OPENAI_API_KEY)
+THIRD_PARTY_BASE = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
+THIRD_PARTY_URL = THIRD_PARTY_BASE.rstrip('/') + '/chat/completions'
 
-LLAMA_API_KEY = os.getenv('LLAMA_API_KEY', API_KEY_gpt)
-LLAMA_BASE_URL = os.getenv('LLAMA_BASE_URL', 'https://api.groq.com/openai/v1')
-LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama-3.3-70b-versatile')
+# Target
+TARGET_PROVIDER = os.getenv('TARGET_PROVIDER', 'third-party')
+TARGET_MODEL = os.getenv('TARGET_MODEL', os.getenv('TARGET_MODEL', 'llama-3.3-70b-versatile'))
 
 device = 'cuda:0' if HAS_GPU else 'cpu'
-model_path = os.getenv('LOCAL_MODEL_PATH', 'meta-llama/Llama-2-13b-chat-hf')
 
 # --- Wikipedia Retriever Config ---
 WIKI_API = "https://en.wikipedia.org/w/api.php"
@@ -84,100 +83,109 @@ WIKI_DELAY = float(os.getenv('WIKI_DELAY', '1.0'))
 # LLM Generation Functions (same as fact-audit.py)
 # ============================================================
 
-def gpt4o_turbo_generate(text, temp=None):
-    _step_counter['gpt4o'] += 1
-    num = 50
-    res = ""
-    while num > 0 and len(res) == 0:
-        try:
-            payload = {"model": GPT_MODEL, "messages": [{"role": "user", "content": text}]}
-            if temp is not None:
-                payload['temperature'] = temp
-            response = requests.post(API_URL_gpt, headers=HEADERS_gpt, data=json.dumps(payload))
-            response_json = response.json()
-            if 'choices' not in response_json:
-                _log('GPT', f"API error (status={response.status_code}): {response_json}")
-                raise KeyError('choices')
-            res = response_json['choices'][0]['message']['content']
-        except Exception as e:
-            _log('GPT', f"retry {50-num+1}/50 - {e}")
-            time.sleep(10)
-            num -= 1
-    return res
-
-
-def gpt4omini_turbo_generate(text, temp=None):
-    _step_counter['gpt4o_mini'] += 1
-    num = 50
-    res = ""
-    while num > 0 and len(res) == 0:
-        try:
-            payload = {"model": GPT_JUDGE_MODEL, "messages": [{"role": "user", "content": text}]}
-            if temp is not None:
-                payload['temperature'] = temp
-            response = requests.post(API_URL_gpt, headers=HEADERS_gpt, data=json.dumps(payload))
-            response_json = response.json()
-            if 'choices' not in response_json:
-                _log('GPT-JUDGE', f"API error (status={response.status_code}): {response_json}")
-                raise KeyError('choices')
-            res = response_json['choices'][0]['message']['content']
-        except Exception as e:
-            _log('GPT-JUDGE', f"retry {50-num+1}/50 - {e}")
-            time.sleep(10)
-            num -= 1
-    return res
-
-
-def _llama_api_generate(text):
-    _step_counter['llama'] += 1
-    url = LLAMA_BASE_URL.rstrip('/') + '/chat/completions'
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {LLAMA_API_KEY}"
-    }
-    payload = json.dumps({
-        "model": LLAMA_MODEL,
-        "messages": [{"role": "user", "content": text}],
-        "temperature": 0.0,
-        "max_tokens": 1024
-    })
-    num = 10
+def _gemini_generate(text, model_name, temp=None):
+    """Call Gemini API directly."""
+    url = f"{GEMINI_API_URL}/models/{model_name}:generateContent?key={GEMINI_API_KEY}"
+    payload = {"contents": [{"parts": [{"text": text}]}]}
+    if temp is not None:
+        payload["generationConfig"] = {"temperature": temp}
+    num = 20
     while num > 0:
         try:
-            response = requests.post(url, headers=headers, data=payload)
+            response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=120)
             result = response.json()
-            if 'choices' not in result:
-                _log('LLaMA', f"API error (status={response.status_code}): {result}")
-                raise KeyError('choices')
-            return result['choices'][0]['message']['content'].strip()
+            if 'candidates' not in result:
+                _log('GEMINI', f"API error (status={response.status_code}): {result}")
+                raise KeyError('candidates')
+            return result['candidates'][0]['content']['parts'][0]['text']
+        except KeyboardInterrupt:
+            raise
         except Exception as e:
-            _log('LLaMA', f"retry {10-num+1}/10 - {e}")
+            _log('GEMINI', f"retry {20-num+1}/20 - {e}")
             time.sleep(5)
             num -= 1
     return ""
 
 
-model = None
-tokenizer = None
-if HAS_GPU:
-    print(f"[GPU mode] Loading local model: {model_path}")
-    model = AutoModelForCausalLM.from_pretrained(model_path).half().eval().to(device)
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-else:
-    print(f"[API mode] Using LLaMA via API: {LLAMA_BASE_URL} model={LLAMA_MODEL}")
+def _openai_generate(text, model_name, temp=None):
+    """Call OpenAI API directly."""
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {OPENAI_API_KEY}"}
+    payload = {"model": model_name, "messages": [{"role": "user", "content": text}]}
+    if temp is not None:
+        payload['temperature'] = temp
+    num = 50
+    while num > 0:
+        try:
+            response = requests.post(OPENAI_API_URL, headers=headers, data=json.dumps(payload), timeout=120)
+            response_json = response.json()
+            if 'choices' not in response_json:
+                _log('OPENAI', f"API error (status={response.status_code}): {response_json}")
+                raise KeyError('choices')
+            return response_json['choices'][0]['message']['content']
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            _log('OPENAI', f"retry {50-num+1}/50 - {e}")
+            time.sleep(10)
+            num -= 1
+    return ""
 
-print(f"[Config] GPT provider={GPT_PROVIDER} | model={GPT_MODEL} | judge={GPT_JUDGE_MODEL}")
-print(f"[Config] GPT endpoint: {API_URL_gpt}")
+
+def _third_party_generate(text, model_name, temp=None):
+    """Call third-party OpenAI-compatible API."""
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {THIRD_PARTY_KEY}"}
+    payload = {"model": model_name, "messages": [{"role": "user", "content": text}]}
+    if temp is not None:
+        payload['temperature'] = temp
+    num = 20
+    while num > 0:
+        try:
+            response = requests.post(THIRD_PARTY_URL, headers=headers, data=json.dumps(payload), timeout=120)
+            response_json = response.json()
+            if 'choices' not in response_json:
+                _log('3RD', f"API error (status={response.status_code}): {response_json}")
+                raise KeyError('choices')
+            return response_json['choices'][0]['message']['content']
+        except KeyboardInterrupt:
+            raise
+        except Exception as e:
+            _log('3RD', f"retry {20-num+1}/20 - {e}")
+            time.sleep(5)
+            num -= 1
+    return ""
+
+
+def _call(provider, model, text, temp=None):
+    """Route call to correct provider."""
+    if provider == 'gemini':
+        return _gemini_generate(text, model, temp)
+    elif provider == 'openai':
+        return _openai_generate(text, model, temp)
+    else:
+        return _third_party_generate(text, model, temp)
+
+
+def gpt4o_turbo_generate(text, temp=None):
+    """Optimizer: generate ref answers."""
+    _step_counter['gpt4o'] += 1
+    return _call(OPTIMIZER_PROVIDER, OPTIMIZER_MODEL, text, temp)
+
+
+def gpt4omini_turbo_generate(text, temp=None):
+    """Judge: score target answers."""
+    _step_counter['gpt4o_mini'] += 1
+    return _call(JUDGE_PROVIDER, JUDGE_MODEL, text, temp)
 
 
 def llama_generate(text):
-    if not HAS_GPU:
-        return _llama_api_generate(text)
-    input_text = "<s>[INST] {} [/INST]".format(text)
-    model_inputs = tokenizer(input_text, return_tensors="pt").to(device)
-    output = model.generate(**model_inputs, max_new_tokens=1024, do_sample=False, num_beams=1)
-    resp = tokenizer.decode(output[0], skip_special_tokens=True).split('[/INST]')[1].strip()
-    return resp
+    """Target model generate."""
+    _step_counter['llama'] += 1
+    return _call(TARGET_PROVIDER, TARGET_MODEL, text, temp=0)
+
+
+print(f"[Config] Optimizer: provider={OPTIMIZER_PROVIDER} model={OPTIMIZER_MODEL}")
+print(f"[Config] Judge: provider={JUDGE_PROVIDER} model={JUDGE_MODEL}")
+print(f"[Config] Target: provider={TARGET_PROVIDER} model={TARGET_MODEL}")
 
 
 # ============================================================
@@ -406,8 +414,12 @@ def run_single_claim(claim_data, idx, total):
 
     # Step 3: RAG - Retrieve Wikipedia evidence, then LLaMA with evidence
     evidence = retrieve_wikipedia(source_claim)
-    rag_prompt = gen_rag_prompt(source_claim, evidence)
-    _log('RAG', "Calling LLaMA (with retrieved evidence)...")
+    if evidence:
+        rag_prompt = gen_rag_prompt(source_claim, evidence)
+        _log('RAG', f"Calling LLaMA (with {len(evidence)} retrieved passages)...")
+    else:
+        rag_prompt = gen_baseline_prompt(source_claim)
+        _log('RAG', "No evidence found, fallback to claim-only prompt...")
     rag_answer = llama_generate(rag_prompt)
 
     # Step 4: Score both answers
@@ -531,7 +543,7 @@ def print_summary(metrics, results):
     print("FACT-AUDIT RAG Comparison Report")
     print("=" * 70)
     print(f"\nTotal claims evaluated: {len(results)}")
-    print(f"LLaMA model: {LLAMA_MODEL}")
+    print(f"LLaMA model: {TARGET_MODEL}")
     print(f"Wikipedia top-k: {WIKI_TOP_K}")
     print()
 
@@ -640,7 +652,7 @@ def main():
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump({
                 'config': {
-                    'llama_model': LLAMA_MODEL,
+                    'llama_model': TARGET_MODEL,
                     'wiki_top_k': WIKI_TOP_K,
                     'wiki_max_chars': WIKI_MAX_CHARS,
                     'wiki_delay': WIKI_DELAY,

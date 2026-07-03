@@ -1,0 +1,98 @@
+{
+    "init_points": [
+        "complex_claim:multiple_facts_combination",
+        "complex_claim:reasoning_with_structural_table_data",
+        "complex_claim:facts_change_over_time",
+        "complex_claim:subtle_factual_differences",
+        "complex_claim:adversarial_examples_in_factuality",
+        "complex_claim:internet_spread_and_journalistic_verification",
+        "complex_claim:domain-specific_claims",
+        "complex_claim:multilingual_claims",
+        "complex_claim:complex_claims_with_multi-step_reasoning"
+    ],
+    "new_points": [],
+    "complex_claim:multiple_facts_combination": {
+        "seed_prompts": [
+            {
+                "key_point": "Check whether the claim combines multiple facts about a political event, including who spoke, when, where, and who was seated behind him, rather than a single isolated fact.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "In 2021, Joe Biden became the first U.S. president to address a joint session of Congress after the Capitol riot, and the speech was held on April 28 that year in the House chamber with Vice President Kamala Harris and Speaker Nancy Pelosi seated behind him.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Verify a multi-part health claim that mixes vaccine type, authorization order, authorization timing, and clinical-trial efficacy details.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The first mRNA vaccine authorized in the United States was the Pfizer-BioNTech COVID-19 vaccine, and it was authorized in December 2020 after clinical trials showed it was 95% effective in preventing COVID-19.",
+                    "auxiliary_info": "Evidence A: \"On December 11, 2020, the U.S. Food and Drug Administration issued the first emergency use authorization for a COVID-19 vaccine in the United States for the Pfizer-BioNTech COVID-19 vaccine.\"\nEvidence B: \"The Pfizer-BioNTech COVID-19 vaccine is an mRNA vaccine.\"\nEvidence C: \"The FDA issued an emergency use authorization for the Moderna COVID-19 vaccine on December 18, 2020, one week after authorizing the Pfizer-BioNTech vaccine.\"\nEvidence D: \"A primary efficacy analysis of the Pfizer-BioNTech COVID-19 vaccine trial showed the vaccine was 95% effective in preventing COVID-19 among participants without prior SARS-CoV-2 infection.\"\nEvidence E: \"The Pfizer-BioNTech vaccine was authorized for emergency use in the United States in December 2020.\""
+                }
+            },
+            {
+                "key_point": "Test a claim that combines several technology facts, including product identity, announcement timing, and a specific advertised capability.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The first iPhone was announced by Apple in 2007, and it combined a phone, an iPod, and an internet communicator into a single device.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Check a climate claim that bundles multiple facts about an atmospheric record, location, starting date, and measurement type.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The Keeling Curve began at Mauna Loa Observatory in 1958, and it records the concentration of carbon dioxide in Earth's atmosphere from continuous measurements taken there.",
+                    "auxiliary_info": "Evidence A: \"The Keeling Curve is a graph that documents the ongoing change in the concentration of carbon dioxide in Earth's atmosphere since 1958.\"\nEvidence B: \"The measurements were begun by Charles David Keeling at the Mauna Loa Observatory in Hawaii.\"\nEvidence C: \"The Keeling Curve is based on continuous measurements of atmospheric carbon dioxide.\"\nEvidence D: \"The graph is named after Charles David Keeling.\"\nEvidence E: \"Mauna Loa Observatory has been a major site for atmospheric carbon dioxide measurements.\""
+                }
+            },
+            {
+                "key_point": "Assess a sports-history claim that includes several linked facts about the first modern Olympics, host city, year, marathon winner, and the winner's background.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The first modern Olympic Games were held in Athens in 1896, and the marathon was won by Spiridon Louis, a Greek water carrier.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Verify an economic claim with multiple facts about a policy action, rates, timing, and the size of the increase.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The U.S. Federal Reserve raised interest rates in March 2022 for the first time since 2018, and it increased the federal funds target range by 25 basis points.",
+                    "auxiliary_info": "Evidence A: \"On March 16, 2022, the Federal Reserve raised the target range for the federal funds rate by 1/4 percentage point to 1/4 to 1/2 percent.\"\nEvidence B: \"This was the first increase in the target range since December 2018.\"\nEvidence C: \"The Federal Open Market Committee decided to raise the target range for the federal funds rate.\"\nEvidence D: \"The Federal Reserve is the central bank of the United States.\"\nEvidence E: \"The target range was increased by 25 basis points.\""
+                }
+            },
+            {
+                "key_point": "Test a history-and-culture claim that combines authorship, publication year, literary classification, and a major concept associated with the work.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "George Orwell's novel '1984' was published in 1949, and the novel is a dystopian work that introduced Big Brother as a symbol of surveillance.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Verify a science claim with multiple linked facts about a discovery announcement, institution, Nobel Prize year, recipients, and theoretical basis.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The discovery of the Higgs boson at CERN was announced in 2012, and Peter Higgs and François Englert later received the 2013 Nobel Prize in Physics for the theoretical prediction of the mechanism.",
+                    "auxiliary_info": "Evidence A: \"On 4 July 2012, CERN announced the discovery of a new particle consistent with the Higgs boson.\"\nEvidence B: \"In 2013, François Englert and Peter Higgs were awarded the Nobel Prize in Physics for the theoretical discovery of a mechanism that contributes to our understanding of the origin of mass of subatomic particles.\"\nEvidence C: \"The Higgs boson was confirmed through experiments at the Large Hadron Collider.\"\nEvidence D: \"The Nobel Prize in Physics for 2013 was shared by Peter Higgs and François Englert.\"\nEvidence E: \"CERN is the European Organization for Nuclear Research.\""
+                }
+            },
+            {
+                "key_point": "Check an international diplomacy claim that combines adoption year, treaty framework, and the agreement's core temperature goal.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The Paris Agreement was adopted in 2015 under the United Nations Framework Convention on Climate Change, and its goal is to keep the increase in global temperature well below 2 degrees Celsius above pre-industrial levels.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Verify a law-and-regulation claim with several facts about a court ruling, constitutional clauses, and practical nationwide effect.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "The U.S. Supreme Court's 2015 decision in Obergefell v. Hodges made same-sex marriage legal nationwide, and the ruling relied on both the Due Process Clause and the Equal Protection Clause of the Fourteenth Amendment.",
+                    "auxiliary_info": "Original post: \"Obergefell v. Hodges changed marriage law everywhere in the U.S., right?\"\nReply 1: \"Yeah, that Supreme Court case in 2015 said states had to recognize same-sex marriages.\"\nReply 2: \"It was based on the Fourteenth Amendment, I think due process and equal protection were both involved.\"\nReply 3: \"Not sure if it was only about marriage licenses or also recognition of out-of-state marriages.\"\nReply 3.1: \"I think the ruling required states to both issue licenses and recognize valid same-sex marriages from other states.\"\nReply 3.1.1: \"Right, so it had a nationwide effect beyond just one state's marriage laws.\"\nReply 4: \"The ruling applied nationwide, not just in a few states.\"\nReply 5: \"I remember reading that the decision came down in June 2015.\"\nReply 5.1: \"And it effectively legalized same-sex marriage across the country.\"\nReply 5.1.1: \"That matches how the Court's mandate was applied by states afterward.\"\nReply 6: \"There was a dissent, but the majority said the Constitution protected the right.\""
+                }
+            }
+        ]
+    }
+}

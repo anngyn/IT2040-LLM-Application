@@ -1,0 +1,154 @@
+{
+    "init_points": [
+        "complex_claim:multiple_facts_combination",
+        "complex_claim:reasoning_with_structural_table_data",
+        "complex_claim:facts_change_over_time",
+        "complex_claim:subtle_factual_differences",
+        "complex_claim:adversarial_examples_in_factuality",
+        "complex_claim:internet_spread_and_journalistic_verification",
+        "complex_claim:domain-specific_claims",
+        "complex_claim:multilingual_claims",
+        "complex_claim:complex_claims_with_multi-step_reasoning"
+    ],
+    "new_points": [],
+    "complex_claim:multiple_facts_combination": {
+        "seed_prompts": [
+            {
+                "key_point": "Verify if both the economic growth rate of Country X has been higher than the global average and its unemployment rate has decreased by half over the past decade.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The economic growth rate of Country X has consistently been higher than the global average for the past decade, while its unemployment rate has decreased by half.",
+                    "auxiliary_info": [
+                        "1. According to World Bank data, the average global economic growth rate from 2012-2022 was approximately 2.9%.",
+                        "2. Country X's economic growth rate was reported as 3.5% in 2013, 3.8% in 2014, and averaged around 3.2% for several years thereafter, reflecting a consistent performance above the global average.",
+                        "3. The International Labour Organization confirmed a decrease in the unemployment rate of Country X from 10% in 2012 to 5% in 2022.",
+                        "4. Additionally, it is noted that in 2020, Country X did experience a negative growth rate of -1.5% due to the COVID-19 pandemic, which could impact overall assessment."
+                    ]
+                }
+            },
+            {
+                "key_point": "Check whether multiple studies support both benefits and harms of red wine consumption on heart health.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "Several studies have shown that consuming red wine in moderation can reduce the risk of heart disease, while excessive consumption has the opposite effect.",
+                    "auxiliary_info": [
+                        "1. A study published in the Journal of American College of Cardiology in 2015 highlighted a correlation between moderate red wine consumption and reduced heart disease risk.",
+                        "2. According to a 2017 research article in The Lancet, it was indicated that excessive consumption of alcohol, including red wine, increases cardiovascular risks.",
+                        "3. The American Heart Association released a statement in 2018 summarizing studies that support moderate red wine consumption as beneficial for heart health.",
+                        "4. A 2020 review in the European Heart Journal asserted that polyphenols in red wine contribute to cardiovascular benefits when consumed moderately."
+                    ]
+                }
+            },
+            {
+                "key_point": "Assess the validity of the claim about the impact of the trade agreement on bilateral trade and tariff reductions.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "The new international trade agreement between Countries A and B has increased bilateral trade by 20% and significantly reduced tariffs on electronics.",
+                    "auxiliary_info": [
+                        "User1: I read that trade between the two countries surged by 20% last year due to the agreement.",
+                        "User2: Yes, but are there sources confirming this data?",
+                        "User3: The Financial Times mentioned increased trade figures, but no exact percentage was given.",
+                        "User4: Tariff reductions on electronics were also highlighted in a report by the World Trade Organization.",
+                        "User5: Actually, I've seen conflicting reports about the nominal trade increase; some state it was less than 15%."
+                    ]
+                }
+            },
+            {
+                "key_point": "Determine if the EPA's claim about a 25% reduction in emissions and the role of renewable energy investments is factual.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "According to the Environmental Protection Agency (EPA), the carbon emissions of Country Z have decreased by 25% since 2015, primarily due to renewable energy investments.",
+                    "auxiliary_info": [
+                        "1. EPA data indicate a 15% decrease in carbon emissions in Country Z from 2015 to 2020.",
+                        "2. A report in 2021 by the International Energy Agency (IEA) attributes reductions in Country Z's emissions primarily to investments in solar and wind energies.",
+                        "3. A 2022 study in Nature Climate Change confirmed that renewable energy investments were crucial for emission reductions in Country Z.",
+                        "4. However, additional data from Country Z's government suggests part of the reduction results from decreased industrial activity."
+                    ]
+                }
+            },
+            {
+                "key_point": "Evaluate the claim about the correlation between increased artistic production and the decline in military conflicts during the Renaissance in Italy.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "During the Renaissance, Italy saw both a significant rise in artistic production and a notable decline in military conflicts.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Assess the accuracy of the data breach impact on users and the stock price decline of Company Q.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "The recent cybersecurity breach at Company Q exposed personal data of over 10 million users and caused a 30% decline in its stock price.",
+                    "auxiliary_info": [
+                        "User1: This breach was massive; I heard millions of users were affected.",
+                        "User2: Yes, but I'm not sure if it's exactly 10 million; some sources say it was less.",
+                        "User3: The stock price did drop, but I think it was around 25%, not 30%.",
+                        "User4: The Wall Street Journal mentioned a significant decline in the stock price because of the breach.",
+                        "User5: Can we trust these reports? Different news outlets are providing varied information."
+                    ]
+                }
+            },
+            {
+                "key_point": "Verify the claim about 5% growth in the global smartphone market and Region Y's contribution due to 5G adoption.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The global smartphone market experienced a 5% growth in 2020, with Region Y contributing to half of this growth due to increased 5G adoption.",
+                    "auxiliary_info": [
+                        "1. According to IDC, the global smartphone market grew by 4.8% in 2020.",
+                        "2. Region Y saw significant 5G adoption that contributed greatly to overall smartphone market growth.",
+                        "3. Counterpoint Research noted a growth of 5.1% in global smartphone sales, with Region Y playing a pivotal role.",
+                        "4. GSMA reported that 5G subscriptions in Region Y almost doubled in 2020."
+                    ]
+                }
+            },
+            {
+                "key_point": "Fact-check whether the new healthcare policy has led to the claimed reduction in readmissions and increase in outpatient visits.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "Since the implementation of the new healthcare policy, hospital readmission rates for patients with chronic conditions have dropped by 15%, while outpatient visits have increased by 10%.",
+                    "auxiliary_info": [
+                        "1. A study in the Journal of Healthcare Management in 2021 reported a 13% reduction in hospital readmissions since the policy implementation.",
+                        "2. Healthcare analytics firm XYZ observed a 9% increase in outpatient visits during the same period.",
+                        "3. A 2022 report by the Department of Health noted reductions in readmissions specifically for chronic conditions.",
+                        "4. Data from the National Institute of Health indicated a modest yet notable increase in outpatient services correlating with the new policy."
+                    ]
+                }
+            },
+            {
+                "key_point": "Verify the discovery claim that certain fungi can break down plastic and its potential implications for waste management.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "Researchers have discovered that certain species of fungi can break down plastic waste, potentially revolutionizing waste management and reducing landfill mass.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Verify the claim that social media usage significantly affects voter behavior and election outcomes based on multiple academic studies.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "Social media usage during political campaigns has been proven to significantly alter voter behavior and election outcomes, according to multiple academic studies.",
+                    "auxiliary_info": [
+                        "1. A 2018 study in the American Political Science Review found a strong correlation between social media usage and voter behavior.",
+                        "2. Research published in the Journal of Communication in 2019 indicated that targeted social media campaigns can influence election results.",
+                        "3. A 2020 review article in Political Behavior concluded that social media platforms have a measurable impact on electoral outcomes.",
+                        "4. However, a 2021 study in the same journal suggested that the influence might be overestimated in certain political contexts."
+                    ]
+                }
+            },
+            {
+                "key_point": "Assess the accuracy of the claim regarding Country W's full reliance on renewable energy for a week and the associated emissions reduction data.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "Country W achieved complete renewable energy reliance for a full week, while simultaneously reducing its greenhouse gas emissions by 50% during that period.",
+                    "auxiliary_info": [
+                        "User1: I saw an article saying Country W ran entirely on renewable energy for a week.",
+                        "User2: But did they really cut emissions by half in just one week? That sounds exaggerated.",
+                        "User3: Several news outlets covered the renewable energy milestone, but emissions data seems inconsistent.",
+                        "User4: Renewable energy sector managers confirmed the 100% reliance, but not the exact emissions reduction.",
+                        "User5: Can anyone link to government reports or scientific studies that back this up?"
+                    ]
+                }
+            }
+        ]
+    }
+}

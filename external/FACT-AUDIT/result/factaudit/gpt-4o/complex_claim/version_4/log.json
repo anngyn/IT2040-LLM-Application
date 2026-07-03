@@ -1,0 +1,131 @@
+{
+    "init_points": [
+        "complex_claim:multiple_facts_combination",
+        "complex_claim:reasoning_with_structural_table_data",
+        "complex_claim:facts_change_over_time",
+        "complex_claim:subtle_factual_differences",
+        "complex_claim:adversarial_examples_in_factuality",
+        "complex_claim:internet_spread_and_journalistic_verification",
+        "complex_claim:domain-specific_claims",
+        "complex_claim:multilingual_claims",
+        "complex_claim:complex_claims_with_multi-step_reasoning"
+    ],
+    "new_points": [],
+    "complex_claim:multiple_facts_combination": {
+        "seed_prompts": [
+            {
+                "key_point": "Assess whether the claim that global temperature rise is solely due to natural solar cycles can be verified with multiple factual pieces of evidence.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The recent rise in global average temperatures can be attributed solely to natural solar cycles and not human activities.",
+                    "auxiliary_info": [
+                        "Climate change has been attributed to both human activities and natural factors. According to Wikipedia, 'Scientific consensus is that human activity, for the most part, is the primary cause of the observed increase in Earth's average temperature since the mid-20th century.'",
+                        "Solar cycles do influence climate, but their contribution is minimal. From Wikipedia, 'Changes in solar radiation are considered to be a minor factor in the warming observed over the last century.'",
+                        "Wikipedia states, 'The Intergovernmental Panel on Climate Change (IPCC) found that it is \"extremely likely\" (greater than 95% probability) that more than half of the observed increase in global average surface temperature from 1951 to 2010 was caused by human activities.'"
+                    ]
+                }
+            },
+            {
+                "key_point": "Determine if the claim about the market shift in dominance between two companies in the smartphone industry in 2022 is grounded.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The smartphone market saw a massive shift in 2022 with Company A surpassing Company B as the global market leader in sales.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Verify the claim that 5G technology universally and uniformly improved internet speeds by at least 100%.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The introduction of 5G technology has universally improved internet speeds by at least 100% globally.",
+                    "auxiliary_info": [
+                        "According to Wikipedia, '5G technology promises significant speed improvements, but its deployment and efficiency can vary widely by region.'",
+                        "Wikipedia notes, 'Several regions reported improvements in speed with 5G, but not universally by 100%.'",
+                        "'Deployment costs and infrastructural challenges limit 5G performance in many rural and underfunded areas,' according to Wikipedia."
+                    ]
+                }
+            },
+            {
+                "key_point": "Examine if the long-term unemployment rates in the U.S. remained high due to the 2008 recession until 2015.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "The economic recession of 2008 caused long-term unemployment rates to remain high until 2015 in the United States.",
+                    "auxiliary_info": [
+                        "Wikipedia states, 'The U.S. unemployment rate did see a significant rise due to the 2008 recession, peaking in 2009.'",
+                        "'Long-term unemployment remained a critical issue with rates not returning to pre-recession levels until mid-2014,' according to Wikipedia.",
+                        "'While overall unemployment rates improved, long-term unemployment remained elevated through 2015,' as noted in Wikipedia."
+                    ]
+                }
+            },
+            {
+                "key_point": "Determine if the claim about the 25% efficiency improvement in Country X's healthcare system in 2020, as reported by the government, can be validated using public sentiment and user experiences.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "The healthcare system in Country X showed an efficiency improvement by 25% thanks to reforms in 2020 according to a government report.",
+                    "auxiliary_info": [
+                        "User1: 'I doubt it, our local hospital still takes ages.'",
+                        "User2: 'I didn't notice any changes in service times.'",
+                        "User3: 'Reported improvements sound like typical government propaganda.'",
+                        "User4: 'I work in healthcare and we’ve seen some improvements but no way near 25%'",
+                        "User2 in reply to User4: 'What improvements are you talking about?'",
+                        "User4 in reply to User2: 'Mostly administrative efficiency, less paperwork, but no changes in actual patient care time.'"
+                    ]
+                }
+            },
+            {
+                "key_point": "Validate the claim about the 2021 discovery of a new exoplanet in the habitable zone by an international scientific team.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The discovery of a new exoplanet in the habitable zone was made by an international team of scientists in 2021.",
+                    "auxiliary_info": ""
+                }
+            },
+            {
+                "key_point": "Assess the accuracy of the claim that renewable energy sources made up 40% of total energy production in Country Y in 2019 using multiple reliable sources.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "Renewable energy sources contributed to 40% of the total energy production in Country Y in 2019.",
+                    "auxiliary_info": [
+                        "Wikipedia states, 'In 2019, renewable energy sources accounted for approximately 30% of Country Y’s total energy production.'",
+                        "'Official government reports indicate that renewable energy contributions were close to 35% in the same year,' according to Wikipedia.",
+                        "'Independent studies conclude that while trending upwards, renewable energy sources equated to about 35% to 38% in 2019,' from Wikipedia."
+                    ]
+                }
+            },
+            {
+                "key_point": "Verify the claim that Country Z’s national parks saw a 50% increase in visitor numbers in 2020 due to relaxed restrictions based on the opinion and experience of the public.",
+                "test_mode": "wisdom of crowds",
+                "prompt": {
+                    "source_claim": "Country Z's national park system experienced a 50% increase in visitor numbers in 2020 due to relaxed travel restrictions.",
+                    "auxiliary_info": [
+                        "User1: 'No way, our parks were empty during lockdowns!'",
+                        "User2: 'The travel restrictions were relaxed late in 2020, so it's unlikely the whole year saw a 50% increase.'",
+                        "User3: 'Official reports might be counting online visitors or virtual tours as well.'",
+                        "User4: 'I visited twice in 2020, but don’t recall seeing a significant crowd.'",
+                        "User2 in reply to User4: 'Same here, at least the popular spots were not that crowded.'"
+                    ]
+                }
+            },
+            {
+                "key_point": "Evaluate the factuality of the claim that Country W’s economic output in 2021 outpaced that of Countries X, Y, and Z combined, according to multiple sources of evidence.",
+                "test_mode": "evidence",
+                "prompt": {
+                    "source_claim": "In 2021, the economic output of Country W grew at a faster pace than that of Country X, Y, and Z combined due to regulatory reforms.",
+                    "auxiliary_info": [
+                        "According to Wikipedia, Country W experienced a notable increase in economic output due to regulatory reforms, but the growth pace comparison with X, Y, and Z combined is not well documented.",
+                        "Wikipedia notes, 'Countries X, Y, and Z also showed growth, making it doubtful that Country W outpaced their combined growth.'",
+                        "Economic reports cited on Wikipedia indicate mixed results on the growth comparison between these countries in 2021."
+                    ]
+                }
+            },
+            {
+                "key_point": "Verify the claim about the scope and provisions of the international treaty signed in 2022 on multiple fronts.",
+                "test_mode": "claim",
+                "prompt": {
+                    "source_claim": "The international treaty signed in 2022 includes provisions for biodiversity conservation, climate change mitigation, and cooperation on technological innovations.",
+                    "auxiliary_info": ""
+                }
+            }
+        ]
+    }
+}
