@@ -829,6 +829,10 @@ if __name__ == '__main__':
                         help="Max knowledge points to evaluate (default: 15, use 1 for ~10 claims)")
     parser.add_argument('--limit-steps', type=int, default=10,
                         help="Max steps per knowledge point in deep_search (default: 10)")
+    parser.add_argument('--limit-seeds', type=int, default=None,
+                        help="Max seed claims per knowledge point (Monte Carlo). "
+                             "Rest up to --limit-steps are adaptive (importance sampling). "
+                             "e.g. --limit-seeds 3 --limit-steps 10 = 3 seed + 7 adaptive")
     args = parser.parse_args()
 
     main_cat = args.category.lower().replace(' ', '_') 
@@ -872,7 +876,12 @@ if __name__ == '__main__':
         print(f'Begin gen seed: {task}')
 
         seeds = gen_seed(task, categories)   #seed questions for each knowledge point
-        
+
+        if args.limit_seeds is not None and len(seeds) > args.limit_seeds:
+            print(f'Trimming seeds {len(seeds)} -> {args.limit_seeds} '
+                  f'(rest up to {args.limit_steps} will be adaptive)')
+            seeds = seeds[:args.limit_seeds]
+
         final_data[task] = {
             'seed_prompts': seeds
         }

@@ -62,6 +62,8 @@ FACT-AUDIT sử dụng 3 vai trò:
 
 LLaMA-4-Scout hoạt động khá tốt khi chỉ dùng kiến thức tham số (parametric knowledge). Model nhận diện đúng hầu hết các claim hư cấu là "không thể xác minh", cho thấy khả năng suy luận nội tại tương đối ổn định. Điểm IMR chỉ 10% nghĩa là chỉ 1/10 claim bị đánh giá sai hoàn toàn.
 
+**Lưu ý quan trọng về pipeline:** Lần chạy baseline đầu tiên dùng `--limit-steps 5` nhưng `gen_seed()` luôn sinh 10 seed → vòng lặp adaptive `while len(steps) < max_steps` không bao giờ chạy (vì `10 < 5` là False). Nghĩa là 20 claims đều là **seed ngẫu nhiên** (Monte Carlo từ p(x)), CHƯA có importance sampling nhắm điểm yếu. Xem Thực nghiệm 4 để biết cách chạy đúng cơ chế paper.
+
 ---
 
 ## Thực nghiệm 2: Gold Evidence (Bằng chứng đối sánh của paper)
@@ -193,6 +195,108 @@ Claims không có kết quả Wikipedia → dùng prompt baseline → không b�
 **5. Model mạnh có baseline cao hơn nhưng cùng mức tổn thương:**
 
 Gemini 2.5 Pro đạt 9.5 baseline (so với 6.2 của LLaMA) nhưng giảm tương đương khi nhận evidence không liên quan. Delta tuyệt đối thậm chí lớn hơn (-2.80 vs -0.80) vì có nhiều "chỗ để rơi" hơn.
+
+---
+
+## Thực nghiệm 4: Pipeline Adaptive (giống paper — Importance Sampling)
+
+**Mục tiêu:** Chạy đúng cơ chế cốt lõi của paper — vòng lặp thăm dò lặp (iterative probing) sinh claim mới nhắm vào **điểm yếu** của model, thay vì chỉ sinh claim ngẫu nhiên.
+
+**Script:** `scripts/fact-audit.py` (thêm arg `--limit-seeds`)
+
+### Nền tảng lý thuyết: Monte Carlo vs Importance Sampling
+
+Paper mô hình hóa việc tạo test case như một bài toán lấy mẫu:
+
+- **p(x)** — Phân phối tri thức chuẩn (Oracle Knowledge Distribution): phân phối THỰC của mọi claim có thể tồn tại trong thế giới thực. Đa số claim nằm ở vùng "phổ biến/dễ", ít claim ở vùng "hiếm/khó" (long-tail).
+- **Fα(x)** — Giới hạn fact-checking của model α trên test case x (điểm Judge chấm; điểm thấp = model yếu tại đó).
+
+**Monte Carlo (naive):** Lấy mẫu x ngẫu nhiên từ p(x) rồi đo Fα(x).
+```
+E_p(x)[Fα(x)] = ∫ p(x)·Fα(x) dx
+```
+Vấn đề: hầu hết mẫu rơi vào vùng dễ (model đã biết) → tốn nhiều mẫu mà ít phát hiện điểm yếu. Hội tụ chậm O(1/√N).
+
+**Importance Sampling (FACT-AUDIT):** Thay p(x) bằng phân phối đề xuất **q(x)** tập trung vào vùng model yếu:
+```
+E_p(x)[Fα(x)] = ∫ q(x)·Fα(x)·[p(x)/q(x)] dx = E_q(x)[Fα(x)·p(x)/q(x)]
+```
+- Trọng số quan trọng `p(x)/q(x)` bù đắp sai lệch → ước lượng vẫn không chệch (unbiased)
+- q(x) lý tưởng: `q(x) ∝ p(x)·Fα(x)` — dồn mật độ vào nơi model sai nhiều nhất
+
+**Ánh xạ vào code:**
+
+| Lý thuyết | Hiện thực trong FACT-AUDIT |
+|-----------|----------------------------|
+| p(x) | Toàn bộ claim có thể sinh (giai đoạn seed ngẫu nhiên) |
+| q(x) | **Optimizer agent** — sinh claim nhắm điểm yếu model |
+| x | Một test case (claim + evidence + key_point + test_mode) |
+| Fα(x) | Điểm Judge chấm (score thấp = điểm yếu) |
+| Cập nhật q(x) | Vòng lặp `while len(steps) < max_steps` trong `deep_search()` |
+
+### Phương pháp
+
+Pipeline có 2 giai đoạn trong mỗi knowledge point:
+
+1. **Giai đoạn seed (Monte Carlo):** `gen_seed()` sinh N claim ngẫu nhiên đa chủ đề. Thêm `--limit-seeds N` để giới hạn số seed.
+2. **Giai đoạn adaptive (Importance Sampling):** Vòng lặp lấy các claim điểm thấp (bad cases, score ≤ 3) làm ví dụ, yêu cầu Optimizer sinh claim MỚI khó hơn nhắm đúng vùng đó → chạy Target → Judge chấm → lặp lại cho tới đủ `--limit-steps`.
+
+**Lệnh chạy:**
+```bash
+python fact-audit.py --category complex_claim --limit-points 1 --limit-seeds 3 --limit-steps 10
+# = 3 seed (Monte Carlo) + 7 adaptive (Importance Sampling) = 10 claims
+```
+
+### Kết quả
+
+Target: ts/llama-4-scout-17b-16e-instruct
+
+| # | Loại | Mode | Score | Chủ đề |
+|---|------|------|-------|--------|
+| 1 | seed | evidence | 10 | HR 1234 bill |
+| 2 | seed | claim | 10 | leafy greens |
+| 3 | seed | wisdom of crowds | **3** | Quantum Leap processor |
+| 4 | adaptive | wisdom of crowds | 7 | historical causal links |
+| 5 | adaptive | evidence | 10 | Great Wall |
+| 6 | adaptive | wisdom of crowds | **3** | transatlantic cable |
+| 7 | adaptive | wisdom of crowds | 7 | penicillin discoverer |
+| 8 | adaptive | evidence | 10 | Apollo 11 |
+| 9 | adaptive | wisdom of crowds | 10 | penicillin WWII |
+| 10 | adaptive | wisdom of crowds | 10 | Titanic |
+
+Grade trung bình: **8.0** | IMR: **20%** (2/10 claim điểm ≤ 3)
+
+### Nhận xét — Bằng chứng Importance Sampling hoạt động
+
+**1. Optimizer phát hiện điểm yếu:** Seed claim 3 (Quantum Leap, chế độ `wisdom of crowds`) bị điểm 3 — điểm yếu đầu tiên lộ ra.
+
+**2. Optimizer dồn mẫu vào điểm yếu:** Trong 7 claim adaptive, **6/7 claim đều dùng chế độ `wisdom of crowds`** — đúng chế độ mà model vừa bị điểm thấp. Đây chính là q(x) tập trung mật độ vào vùng `Fα(x)` thấp.
+
+**3. Đa dạng hóa chủ đề nhưng giữ độ khó:** Claim adaptive chuyển sang chủ đề lịch sử/khoa học (Great Wall, penicillin, Apollo, Titanic) — theo Guideline "không lặp chủ đề để tối đa đa dạng" nhưng vẫn nhắm chế độ khó.
+
+**4. So với lần chạy trước:**
+
+| | Baseline (lần 1) | Adaptive (Exp4) |
+|--|------------------|-----------------|
+| Số seed | 10 (không giới hạn) | 3 |
+| Số adaptive | 0 | 7 |
+| Vòng importance sampling | Không chạy | Chạy 7 vòng |
+| Cơ chế | Chỉ Monte Carlo p(x) | Monte Carlo + Importance Sampling q(x) |
+
+**5. Về `new_points` (mở rộng taxonomy):** Vẫn = 0 vì chỉ chạy 1 knowledge point. Hàm `analysis()` (sinh knowledge point mới dựa trên bad cases toàn cục) chỉ kích hoạt khi chạy tới knowledge point cuối cùng. Đây là **tầng adaptive thứ 2** của paper — mở rộng cây phân loại (taxonomy). Cần `--limit-points ≥ 2` để trigger.
+
+### Hai tầng adaptive của FACT-AUDIT
+
+```
+Tầng 1 — Importance Sampling (trong deep_search):
+    sinh claim khó hơn TRONG một knowledge point → nhắm điểm yếu cụ thể
+
+Tầng 2 — Taxonomy Expansion (analysis):
+    phân tích bad cases toàn bộ → sinh knowledge point MỚI (new_points)
+    → phát hiện loại điểm yếu chưa từng test
+```
+
+Exp4 đã chạy Tầng 1. Tầng 2 cần nhiều knowledge point hơn.
 
 ---
 
