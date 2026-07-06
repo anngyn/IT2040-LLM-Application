@@ -314,6 +314,12 @@ def deep_search(task_name, seed_prompts, max_steps=10):  #knowledge point, seed 
         history.append(i)  #record the tested test case
         steps.append(i)
 
+    # Persist seed steps immediately so analysis() (Tier-2) can read them even if the
+    # adaptive loop below does not run (e.g. seeds already >= max_steps).
+    final_data[task_name]['steps'] = steps
+    with open(f'{output_path}/log.json', 'w', encoding='utf-8') as f:
+        json.dump(final_data, f, indent=4, ensure_ascii=False)
+
     show_num = 5
     while len(steps) < max_steps:  #Iterative search
         _log('SEARCH', f"Step {len(steps)}/{max_steps} | API calls: gpt4o={_step_counter['gpt4o']} mini={_step_counter['gpt4o_mini']} llama={_step_counter['llama']}")
@@ -833,6 +839,10 @@ if __name__ == '__main__':
                         help="Max seed claims per knowledge point (Monte Carlo). "
                              "Rest up to --limit-steps are adaptive (importance sampling). "
                              "e.g. --limit-seeds 3 --limit-steps 10 = 3 seed + 7 adaptive")
+    parser.add_argument('--max-expansions', type=int, default=0,
+                        help="Tier-2 adaptive: max new knowledge points to generate via "
+                             "analysis() of bad cases (default: 0 = disabled). "
+                             "e.g. 1 = expand taxonomy once with a new weakness-targeted point")
     args = parser.parse_args()
 
     main_cat = args.category.lower().replace(' ', '_') 
@@ -869,7 +879,8 @@ if __name__ == '__main__':
         'new_points': [],
     }
     idx = 0
-    
+    expansions_done = 0
+
     while idx < len(test_points) and idx < args.limit_points:
         
         task = test_points[idx]  #main task: sub task
@@ -890,18 +901,29 @@ if __name__ == '__main__':
         
         deep_search(task, seeds, max_steps=args.limit_steps) #knowledge point, seed questions for the knowledge point
         
-        if idx == len(test_points) - 1:
+        # Tier-2 adaptive (taxonomy expansion): trigger at the last point WITHIN the
+        # current limit, not the last of the full 9-point taxonomy. Only pass points
+        # actually evaluated (they have 'steps'); others would KeyError in analysis().
+        # Expand the taxonomy at most --max-expansions times to keep the run bounded.
+        last_within_limit = min(len(test_points), args.limit_points) - 1
+        if idx == last_within_limit and expansions_done < args.max_expansions:
+            evaluated_points = test_points[:idx + 1]
             for x in range(3):
-                new_task = analysis(test_points)
+                new_task = analysis(evaluated_points)
                 if new_task == '[[Stop]]':
                     print('Encounter stop. End circuit.')
-                    exit(0)
-                if not judge_new_task(test_points, new_task):
+                    break
+                if not judge_new_task(evaluated_points, new_task):
                     if x < 2: continue
-                    print('Reject three times. End circuit.')
-                    exit(0)
+                    print('Reject three times. Stop expanding.')
+                    break
                 categories[main_cat].append(new_task)
-                test_points.append(main_cat+':'+new_task)
+                # Insert right after current point so it runs next; bump limit to include it.
+                test_points.insert(idx + 1, main_cat + ':' + new_task)
+                args.limit_points += 1
+                expansions_done += 1
+                print(f'[TIER-2] New knowledge point generated ({expansions_done}/'
+                      f'{args.max_expansions}): {new_task}')
                 break
 
         idx += 1    

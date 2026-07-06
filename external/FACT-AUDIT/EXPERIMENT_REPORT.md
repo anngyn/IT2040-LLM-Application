@@ -296,7 +296,69 @@ Tầng 2 — Taxonomy Expansion (analysis):
     → phát hiện loại điểm yếu chưa từng test
 ```
 
-Exp4 đã chạy Tầng 1. Tầng 2 cần nhiều knowledge point hơn.
+Exp4 đã chạy Tầng 1. Tầng 2 được chạy trong Thực nghiệm 5.
+
+---
+
+## Thực nghiệm 5: Tầng 2 Adaptive — Mở rộng Taxonomy (Taxonomy Expansion)
+
+**Mục tiêu:** Chạy tầng adaptive thứ 2 của paper — hàm `analysis()` phân tích các bad case trên nhiều scenario, rồi tự **sinh ra một loại điểm yếu (knowledge point) hoàn toàn MỚI** chưa có trong cây phân loại (taxonomy).
+
+**Script:** `scripts/fact-audit.py` (thêm arg `--max-expansions`)
+
+### Phương pháp
+
+```bash
+python fact-audit.py --category complex_claim --limit-points 3 \
+    --limit-seeds 2 --limit-steps 3 --max-expansions 1
+# 3 scenario x 3 claims (2 seed + 1 adaptive) + 1 knowledge point MỚI x 3 claims
+```
+
+Sau khi chạy hết 3 scenario, `analysis()` gom bad cases (score ≤ 3) từ cả 3 → hỏi Optimizer: "taxonomy đã đủ chưa? Nếu chưa, suy ra một loại điểm yếu mới". Điểm mới được `judge_new_task()` kiểm định, rồi chèn vào và chạy tiếp.
+
+### Kết quả
+
+Điểm trung bình từng scenario (Tầng 1):
+
+| Scenario | Avg score | Ghi chú |
+|----------|-----------|---------|
+| multiple_facts_combination | **2.5** | Điểm yếu rõ nhất |
+| reasoning_with_structural_table_data | 7.0 | |
+| facts_change_over_time | 7.3 | |
+| **deductive_causal_reasoning** (MỚI) | 7.3 | Sinh bởi Tầng 2 |
+
+**Knowledge point MỚI do `analysis()` sinh ra:** `deductive_causal_reasoning`
+
+**Giải thích của Optimizer (dịch tóm tắt):**
+> Taxonomy hiện có: ghép nhiều fact độc lập (`multiple_facts_combination`), trích xuất & so sánh số liệu từ bảng (`reasoning_with_structural_table_data`), fact thay đổi theo thời gian (`facts_change_over_time`). Nhưng **thiếu** category cho claim khẳng định **quan hệ nhân quả** hoặc cần **suy luận logic nhiều bước** (dạng "A xảy ra vì B, dẫn tới C"). Để verify loại này, LLM phải tổng hợp bằng chứng rời rạc, thiết lập phụ thuộc, và validate từng bước suy luận — không chỉ kiểm tra từng fact nguyên tử riêng lẻ.
+
+### Nhận xét — Đây là điểm mấu chốt của FACT-AUDIT
+
+**1. Hai tầng adaptive hoàn chỉnh:**
+
+```
+Tầng 1 (Importance Sampling): tìm claim KHÓ trong một loại điểm yếu có sẵn
+Tầng 2 (Taxonomy Expansion):  tìm LOẠI năng lực chưa từng được test
+```
+
+**2. "Adaptive discovery" thực sự:** Framework không chỉ tìm claim khó hơn, mà còn tự phát hiện **chiều đánh giá mới** mà con người thiết kế taxonomy ban đầu bỏ sót. Đúng tinh thần "dynamically identify deficiencies" của paper.
+
+**3. New point có căn cứ:** `deductive_causal_reasoning` được suy ra HỢP LÝ từ khoảng trống trong taxonomy — không phải random. Điều này cần bad cases đa dạng từ ≥ 3 scenario mới có ý nghĩa (nếu chỉ 1 scenario, new point sẽ kém đại diện).
+
+### Đối chiếu với code paper gốc
+
+Đã so sánh trực tiếp với `FACT-AUDIT/scripts/fact-audit.py` (bản gốc):
+
+| Thành phần | Bản gốc | Bản của chúng tôi | Khớp |
+|-----------|---------|-------------------|------|
+| Vòng importance sampling (`deep_search`) | `while len(steps) < 30` | `while len(steps) < max_steps` (param hóa) | ✅ Logic y hệt |
+| Chọn bad/good cases | `random.sample(bad_cases, 2)` + good | Giống | ✅ |
+| Prompt sinh claim khó | "aim for score < 3.0" | Giống nguyên văn | ✅ |
+| `analysis()` sinh new point | Giống | Giống hàm, giống prompt | ✅ |
+| Trigger tầng 2 | Point cuối của cả 9-point taxonomy, rồi `exit(0)` | Point cuối trong `--limit-points`, rồi `break` | ⚠️ Điều chỉnh cho bounded run |
+| Số claim/point | 10 seed + 20 adaptive = 30 | Giảm qua `--limit-seeds/steps` để tiết kiệm API | ⚠️ Ít mẫu hơn |
+
+**Kết luận đối chiếu:** Logic cốt lõi (cả 2 tầng adaptive) **trung thành với paper gốc**. Khác biệt chỉ ở quy mô (số claim nhỏ hơn để tiết kiệm API/thời gian) và cách dừng (bounded thay vì chạy hết 9 scenario). Cơ chế importance sampling và taxonomy expansion giữ nguyên.
 
 ---
 
@@ -392,15 +454,29 @@ external/FACT-AUDIT/
 cp scripts/.env.example scripts/.env
 # Điền API keys
 
-# 2. Chạy baseline (10 claims)
+# 2. Chạy baseline (Monte Carlo — seed only)
 cd scripts
-python fact-audit.py --limit-points 2 --limit-steps 5
+python fact-audit.py --category complex_claim --limit-points 2 --limit-steps 5
 
 # 3. Chạy so sánh RAG
 python fact-audit-rag.py --input ../result/factaudit/<target-slug>/complex_claim/version_1/log.json --limit 10
 
 # 4. Chạy thực nghiệm gold evidence
 python fact-audit-exp2-gold-evidence.py --input ../result/factaudit/<target-slug>/complex_claim/version_1/log.json
+
+# 5. Exp4 — Adaptive Tầng 1 (importance sampling): 3 seed + 7 adaptive
+python fact-audit.py --category complex_claim --limit-points 1 --limit-seeds 3 --limit-steps 10
+
+# 6. Exp5 — Adaptive Tầng 2 (taxonomy expansion): sinh knowledge point mới
+python fact-audit.py --category complex_claim --limit-points 3 --limit-seeds 2 --limit-steps 3 --max-expansions 1
+```
+
+Các arg bổ sung (không có trong paper gốc, thêm để chạy bounded/tiết kiệm API):
+```
+--limit-points N     # số knowledge point tối đa
+--limit-steps N      # tổng claim mỗi point (seed + adaptive)
+--limit-seeds N      # số seed (Monte Carlo); phần còn lại là adaptive (importance sampling)
+--max-expansions N   # số knowledge point MỚI tối đa sinh bởi analysis() (0 = tắt Tầng 2)
 ```
 
 Biến môi trường để chọn target model:
