@@ -227,9 +227,9 @@ print(f"[Config] Target: model={TARGET_MODEL} via third-party")
 
 
 def _target_api_generate(text):
-    """Call target model through third-party provider (always)."""
+    """Call target model, routing by TARGET_PROVIDER (gemini/openai/third-party)."""
     _step_counter['llama'] += 1
-    return _third_party_generate(text, TARGET_MODEL, temp=0)
+    return _call(TARGET_PROVIDER, TARGET_MODEL, text, temp=0)
 
 
 def llama2_generate(text):

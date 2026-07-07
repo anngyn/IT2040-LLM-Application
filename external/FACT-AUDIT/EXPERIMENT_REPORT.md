@@ -362,6 +362,54 @@ Tầng 2 (Taxonomy Expansion):  tìm LOẠI năng lực chưa từng được te
 
 ---
 
+## Thực nghiệm 6: So sánh Target (Reproduce Table 1 của paper)
+
+**Mục tiêu:** Chạy CÙNG pipeline adaptive với các target model khác nhau để kiểm chứng: framework có phân biệt được model mạnh/yếu không? (Paper Table 1 xếp hạng 13 LLM theo IMR.)
+
+**Script:** `scripts/fact-audit.py`
+
+**Cấu hình chung (giống nhau cho mọi target):**
+- Optimizer + Judge: gemini-2.5-flash (cố định — là "thước đo", không đổi)
+- Pipeline: 3 seed + 7 adaptive = 10 claims, cùng knowledge point `multiple_facts_combination`
+
+### Kết quả
+
+| Target model | Grade | IMR | Provider |
+|--------------|-------|-----|----------|
+| ts/llama-4-scout-17b | 8.00 | 20% | third-party |
+| gemini-2.5-pro | **9.80** | **0%** | gemini |
+
+Chi tiết gemini-2.5-pro: 8/10 claim đạt điểm 10, không claim nào ≤ 3.
+
+### Nhận xét
+
+**1. Framework phân biệt đúng năng lực:** Model mạnh (Gemini 2.5 Pro) có IMR thấp hơn hẳn (0% vs 20%), Grade cao hơn (9.80 vs 8.00). Đây là reproduce tinh thần Table 1 của paper: IMR là chỉ số phân biệt model.
+
+**2. Model càng mạnh, importance sampling càng khó tìm điểm yếu:**
+- Với **LLaMA**: seed claim chế độ `wisdom of crowds` bị điểm 3 → Optimizer dồn 6/7 claim adaptive vào wisdom mode (tìm được điểm yếu rõ).
+- Với **Gemini Pro**: mọi mode đều ~9-10 điểm → Optimizer không tìm được điểm yếu rõ rệt → cần nhiều vòng lặp hơn để hội tụ.
+
+Điều này khớp quan sát Figure 5 của paper: với model mạnh, IMR hội tụ chậm hơn vì khó đào ra lỗi.
+
+**3. Ý nghĩa:** Chất lượng của một benchmark adaptive phụ thuộc vào việc nó có "theo kịp" model mạnh không. Model càng khỏe, càng cần nhiều vòng probing (và nhiều claim) để đánh giá đầy đủ.
+
+### Bug đã phát hiện & sửa trong quá trình chạy
+
+Khi chạy target = gemini-2.5-pro lần đầu, TẤT CẢ claim bị điểm 1 (Grade 1.0, IMR 100%) — bất thường với model mạnh. Nguyên nhân:
+
+- Hàm `_target_api_generate()` **hardcode gọi third-party provider** bất kể `TARGET_PROVIDER`.
+- → Target gemini bị route sai qua vilao.ai → `permission_error` → trả chuỗi rỗng → Judge chấm 1 điểm.
+
+**Sửa:** route theo `TARGET_PROVIDER` giống optimizer/judge:
+```python
+def _target_api_generate(text):
+    _step_counter['llama'] += 1
+    return _call(TARGET_PROVIDER, TARGET_MODEL, text, temp=0)
+```
+LLaMA vẫn chạy đúng (TARGET_PROVIDER=third-party). Bài học: kết quả IMR=100% cho model mạnh là dấu hiệu lỗi hạ tầng (empty response), không phải model kém — luôn kiểm tra `answer` thật trước khi tin điểm số.
+
+---
+
 ## So sánh tổng hợp giữa các thực nghiệm
 
 | Thực nghiệm | Model | Grade Baseline | Grade có Evidence | Delta |
