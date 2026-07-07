@@ -176,12 +176,13 @@ Chào thầy và các bạn. Nhóm 8 xin trình bày đề tài FACT-AUDIT cộn
 2. **FACT-AUDIT framework**: 3 giai đoạn và Importance Sampling
 3. **Khung 5 agent** và cấu trúc test case
 4. **Metrics & Kết quả**: IMR / JFR / Grade trên 13 LLM
-5. **Từ Limitation → RAG**: đề xuất mở rộng của nhóm
+5. **Thực nghiệm tái hiện**: nhóm chạy lại framework
+6. **Hướng mở rộng: RAG**, đề xuất của nhóm
 
 > Đây là **framework đánh giá năng lực** fact-checking của LLM, không phải kiểm chứng một claim cụ thể.
 
 <!--
-Bài gồm 5 phần: bối cảnh, khung FACT-AUDIT, các agent và dữ liệu kiểm thử, bộ chỉ số và kết quả, cuối cùng là đề xuất RAG. Nhấn mạnh: đây là framework ĐÁNH GIÁ năng lực, không phải kiểm chứng một phát biểu cụ thể. [~20s]
+Bài gồm sáu phần: bối cảnh, khung FACT-AUDIT, các agent và dữ liệu kiểm thử, bộ chỉ số và kết quả, phần tái hiện framework do nhóm chạy lại, cuối cùng là đề xuất RAG. Nhấn mạnh: đây là framework ĐÁNH GIÁ năng lực, không phải kiểm chứng một phát biểu cụ thể. [~20s]
 -->
 
 ---
@@ -530,15 +531,113 @@ Hai phân tích bổ sung. Bên trái: hai kịch bản khó nhất của mỗi 
 
 <div class="dbar"></div>
 
-# Từ Limitation → RAG
+# Thực nghiệm tái hiện
 
-<div class="dsub">Đề xuất mở rộng của nhóm: cấp evidence qua retriever</div>
+<div class="dsub">Nhóm chạy lại framework: baseline · vòng lặp adaptive · so sánh model</div>
 
 <div class="dmeta">Phần 5</div>
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>5. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
+## Cấu hình tái hiện
+
+<div class="cols">
+<div class="col">
+
+**Phân vai 3 agent** *(qua API)*
+- **Optimizer**: `gemini-2.5-flash`
+- **Judge**: `gemini-2.5-flash`
+- **Target** *(model bị test)*: thay đổi
+
+**Giữ nguyên logic paper**
+- Chỉ đổi backend LLM sang API
+- Importance Sampling & taxonomy: nguyên vẹn
+
+</div>
+<div class="col">
+
+**Quy mô mỗi lần chạy**
+- 3 seed *(Monte Carlo)* + 7 adaptive *(Importance Sampling)*
+- Nhóm kịch bản: `complex_claim`
+- Metric: **Grade 1–10**, **IMR** (% Grade ≤ 3)
+
+</div>
+</div>
+
+<div class="box">
+
+Mục tiêu mid-term: chứng minh **tái hiện đúng cơ chế** của paper, không phải đạt SOTA.
+
+</div>
+
+<!--
+Nhóm chạy lại framework qua API. Optimizer và Judge cố định là Gemini 2.5 Flash, đóng vai thước đo; Target là model bị kiểm tra, thay đổi giữa các lần chạy. Logic gốc của paper giữ nguyên, chỉ đổi backend sang API. Mỗi lần chạy gồm ba seed ngẫu nhiên cộng bảy case adaptive. Mục tiêu mid-term là tái hiện đúng cơ chế, không phải đạt điểm cao nhất. [~45s]
+-->
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
+## Bằng chứng: Importance Sampling nhắm điểm yếu
+
+**Chạy target LLaMA-4-Scout:** seed case chế độ `wisdom of crowds` bị điểm thấp (3/10).
+
+<div class="box">
+
+Ở 7 case adaptive tiếp theo, Optimizer sinh **6/7 case đều `wisdom of crowds`** — đúng chế độ mô hình vừa làm kém. Đây chính là $q(x)$ tự dồn mật độ vào vùng $F_\alpha(x)$ thấp.
+
+</div>
+
+**Tái hiện 2 tầng adaptive:**
+- **Tầng 1** *(Prober)*: sinh case khó hơn TRONG một kịch bản
+- **Tầng 2** *(Appraiser)*: phân tích bad case → sinh **kịch bản MỚI** `deductive_causal_reasoning` (suy luận nhân quả nhiều bước) mà taxonomy gốc chưa có
+
+<!--
+Bằng chứng cụ thể cho Importance Sampling: khi chạy LLaMA-4-Scout, case chế độ wisdom of crowds bị điểm ba. Ngay sau đó, sáu trên bảy case adaptive đều rơi vào chế độ wisdom, đúng chỗ mô hình yếu. Đây là phân phối q tự dồn vào vùng điểm thấp. Nhóm cũng tái hiện cả hai tầng adaptive: tầng một sinh case khó hơn trong kịch bản, tầng hai tự sinh kịch bản mới về suy luận nhân quả mà cây phân loại gốc chưa có. [~50s]
+-->
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
+## Kết quả: framework phân biệt được model
+
+| Target model | Grade | IMR (% Grade ≤ 3) |
+|---|---|---|
+| LLaMA-4-Scout-17B | 8.00 | 20% |
+| **Gemini 2.5 Pro** | **9.80** | **0%** |
+
+<div class="box">
+
+Model mạnh (Gemini Pro) có **IMR thấp hơn hẳn**: khớp tinh thần Table 1 của paper (IMR là chỉ số phân biệt năng lực).
+
+</div>
+
+> Model càng mạnh, Importance Sampling càng **khó đào ra điểm yếu** → cần nhiều vòng probing hơn để hội tụ (khớp Fig 5).
+
+<!--
+Kết quả so sánh hai target trên cùng cấu hình: LLaMA-4-Scout đạt Grade tám, IMR hai mươi phần trăm; Gemini 2.5 Pro đạt Grade chín phẩy tám, IMR không phần trăm. Model mạnh có IMR thấp hơn hẳn, đúng tinh thần Table 1 của bài báo. Một nhận xét: model càng mạnh thì Importance Sampling càng khó đào ra điểm yếu, cần nhiều vòng probing hơn để hội tụ, khớp với Figure 5. [~40s]
+-->
+
+---
+
+<!-- _class: divider -->
+
+<div class="dnum">6</div>
+
+<div class="dbar"></div>
+
+# Từ Limitation → RAG
+
+<div class="dsub">Đề xuất mở rộng của nhóm: cấp evidence qua retriever</div>
+
+<div class="dmeta">Phần 6</div>
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Từ Limitation → RAG (đề xuất của nhóm)
 
@@ -552,8 +651,55 @@ Hai phân tích bổ sung. Bên trái: hai kịch bản khó nhất của mỗi 
 
 <span class="caption">Giả thuyết: việc bổ sung evidence đưa trường hợp <code>[claim]</code> tiệm cận <code>[evidence]</code>, kỳ vọng giảm IMR/JFR (trên cùng claim set và cùng target model).</span>
 
+<div class="warn">
+
+**Câu hỏi để ngỏ cho final-term:** evidence của paper là *gold* (chuẩn, do người soạn). RAG thực tế lấy evidence *tự động* — nếu retrieval **kém liên quan** thì IMR có giảm không? Kết quả so sánh baseline vs RAG sẽ trình bày ở báo cáo cuối kỳ.
+
+</div>
+
 <!--
-Đề xuất xuất phát trực tiếp từ bài báo: chính tác giả nêu RAG trong mục Limitations. Nhóm cắm một retriever trước mô hình mục tiêu, lấy bằng chứng liên quan rồi ghép vào prompt. Giả thuyết: việc này đưa trường hợp claim tiệm cận evidence, kỳ vọng giảm IMR và JFR. Phần cài đặt và kết quả so sánh do các bạn trình bày tiếp. [~50s]
+Đề xuất xuất phát trực tiếp từ bài báo: chính tác giả nêu RAG trong mục Limitations. Nhóm cắm một retriever trước mô hình mục tiêu, lấy bằng chứng liên quan rồi ghép vào prompt. Giả thuyết: việc này đưa trường hợp claim tiệm cận evidence, kỳ vọng giảm IMR và JFR. Nhưng có một câu hỏi để ngỏ: evidence trong bài báo là gold, do người soạn chuẩn; còn RAG thực tế lấy evidence tự động, nếu truy xuất kém liên quan thì chưa chắc giảm IMR. Kết quả so sánh cụ thể nhóm sẽ trình bày ở báo cáo cuối kỳ. [~55s]
+-->
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
+## Tổng kết mid-term
+
+<div class="cols">
+<div class="col">
+
+**Đã làm được**
+- Hiểu & trình bày cơ chế FACT-AUDIT
+- Tái hiện framework qua API
+- Xác nhận Importance Sampling nhắm điểm yếu
+- Tái hiện 2 tầng adaptive
+- So sánh model: framework phân biệt mạnh/yếu
+
+</div>
+<div class="col">
+
+**Hướng final-term**
+- Cắm retriever (RAG) trước target
+- So sánh baseline vs RAG trên cùng claim set
+- Phân tích ảnh hưởng của **chất lượng retrieval** lên IMR/JFR
+
+</div>
+</div>
+
+<div class="box">
+
+Cốt lõi: từ **hiểu paper** → **tái hiện được** → **đề xuất mở rộng có cơ sở**.
+
+</div>
+
+<!--
+Tổng kết phần mid-term. Nhóm đã hiểu và trình bày cơ chế FACT-AUDIT, tái hiện framework qua API, xác nhận Importance Sampling thực sự nhắm vào điểm yếu, tái hiện cả hai tầng adaptive, và so sánh được các model. Hướng cuối kỳ: cắm retriever để làm RAG, so sánh baseline với RAG trên cùng tập claim, và phân tích ảnh hưởng của chất lượng retrieval lên IMR. Mạch xuyên suốt: hiểu paper, tái hiện được, rồi đề xuất mở rộng có cơ sở. [~40s]
+-->
+
+<!--
+KẾT: chuyển tiếp sang lời cảm ơn.
 -->
 
 ---
