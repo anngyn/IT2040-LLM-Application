@@ -227,6 +227,10 @@ Fact-checking nghĩa là đưa mô hình một phát biểu, nó phải vừa ph
 
 ## Hạn chế của các phương pháp đánh giá hiện có
 
+<style scoped>
+  .cols { align-items: center; }
+</style>
+
 <div class="cols">
 <div class="col">
 
@@ -237,9 +241,9 @@ Fact-checking nghĩa là đưa mô hình một phát biểu, nó phải vừa ph
 Về bản chất, đây là một paradigm phân loại tĩnh: không đánh giá được lập luận và không theo kịp các LLM mới.
 
 </div>
-<div class="col">
+<div class="col center">
 
-![w:340px](assets/paper_fig1.png)
+![w:380px](assets/paper_fig1.png)
 
 <span class="caption">Pipeline đánh giá cũ (a) vs FACT-AUDIT (b) — Lin et al., Fig 1</span>
 
@@ -419,7 +423,7 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 </div>
 
 <!--
-Mỗi đề gồm bốn phần: Key Point chỉ dẫn nhiệm vụ, Source Claim là câu cần kiểm chứng, Auxiliary Info là bằng chứng, và Test Mode là bối cảnh. Có ba chế độ: claim không bằng chứng, evidence có bằng chứng chuẩn, và wisdom of crowds dùng bình luận. Lưu ý Test Mode, vì đây là nơi RAG sẽ tác động. [~35s]
+Mỗi đề gồm bốn phần: Key Point chỉ dẫn nhiệm vụ, Source Claim là câu cần kiểm chứng, Auxiliary Info là bằng chứng, và Test Mode là bối cảnh. Có ba chế độ: claim, evidence có bằng chứng chuẩn, và wisdom of crowds dùng bình luận. Lưu ý Test Mode, vì đây là nơi RAG sẽ tác động. [~35s]
 -->
 
 ---
@@ -480,21 +484,26 @@ Bảng đầy đủ 13 mô hình với IMR, JFR, Grade ở cả ba nhóm và Ove
 
 ## Phân tích sâu
 
+<style scoped>
+  .cols { margin-top: 24px; }
+  .col img { max-width: 100%; }
+</style>
+
 <div class="cols">
-<div class="col">
+<div class="col center">
 
 **Kịch bản khó nhất**
 
-![w:430px](assets/paper_fig4.png)
+![w:560px](assets/paper_fig4.png)
 
 <span class="caption">IMR của 2 kịch bản khó nhất mỗi nhóm (Fig 4)</span>
 
 </div>
-<div class="col">
+<div class="col center">
 
 **Vòng lặp hội tụ**
 
-![w:430px](assets/paper_fig5.png)
+![w:560px](assets/paper_fig5.png)
 
 <span class="caption">IMR giảm dần & hội tụ qua các vòng probing (Fig 5)</span>
 
@@ -513,14 +522,14 @@ Hai phân tích bổ sung. Bên trái: hai kịch bản khó nhất của mỗi 
 
 | Test Mode | Độ khó | GPT-4o IMR |
 |---|---|---|
-| `[claim]` (không bằng chứng) | **Khó nhất** | 23.1% |
+| `[claim]` | **Khó nhất** | 23.1% |
 | `[wisdom of crowds]` | Trung bình | 15.4% |
-| `[evidence]` (có bằng chứng) | **Dễ nhất** | **10.6%** |
+| `[evidence]` | **Dễ nhất** | **10.6%** |
 
 <div class="box"><strong>Có bằng chứng giúp LLM fact-check chính xác hơn đáng kể</strong> (IMR giảm khoảng 2 lần). Đây là cơ sở để tích hợp RAG.</div>
 
 <!--
-Độ khó phụ thuộc mạnh vào chế độ kiểm thử: claim không bằng chứng khó nhất, evidence có bằng chứng dễ nhất; với GPT-4o, IMR giảm gần một nửa khi có bằng chứng. Đây chính là quan sát then chốt làm cơ sở để nhóm đề xuất RAG. [~35s]
+Độ khó phụ thuộc mạnh vào chế độ kiểm thử: claim khó nhất, evidence có bằng chứng dễ nhất; với GPT-4o, IMR giảm gần một nửa khi có bằng chứng. Đây chính là quan sát then chốt làm cơ sở để nhóm đề xuất RAG. [~35s]
 -->
 
 ---
