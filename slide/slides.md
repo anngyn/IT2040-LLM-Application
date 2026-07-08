@@ -1,6 +1,6 @@
 ---
 marp: true
-title: "FACT-AUDIT + RAG"
+title: "FACT-AUDIT"
 author: "Nhóm 8 · IT2040"
 paginate: true
 html: true
@@ -147,7 +147,7 @@ header: '<img src="assets/UIT_logo.svg" alt="UIT">'
 
 <div class="titlebox">
 
-# FACT-AUDIT + RAG
+# FACT-AUDIT
 ### Evidence-Augmented Adaptive Fact-Checking Audit
 
 </div>
@@ -462,6 +462,35 @@ Ba chỉ số: IMR là tỉ lệ câu bị chấm từ ba điểm trở xuống,
 
 <!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
+## Case study: JFR trong thực tế (Fig 6, paper)
+
+<div class="box">
+
+**Test Mode:** `[evidence]` · **Source Claim:** "Bamboo can grow up to 35 inches in a single day..."
+**Auxiliary Info:** Wikipedia & Guinness World Records xác nhận tre đạt **91 cm (36 inch)**/ngày trong điều kiện lý tưởng.
+
+</div>
+
+**GPT-4o trả lời:**
+
+> Verdict: **Factual**. Justification: "...certain species of bamboo can grow up to **35 inches (91 cm)** in a single day..."
+
+<div class="warn">
+
+**Lỗi quy đổi đơn vị:** 35 inch ≈ 88,9 cm, không phải 91 cm (91 cm mới đúng là 36 inch). Verdict đúng, nhưng justification sai số liệu, nên Evaluator chỉ cho **Grade 2/10**.
+
+</div>
+
+<span class="small">Đây chính là JFR: nhãn đúng nhưng lập luận có lỗi thực tế, không thể phát hiện nếu chỉ đo accuracy của verdict.</span>
+
+<!--
+Ví dụ thật từ paper, Hình 6. GPT-4o phán claim về tốc độ tăng trưởng tre là Factual, đúng theo bằng chứng. Nhưng lời giải thích ghi sai quy đổi đơn vị: 35 inch không bằng 91cm, mà 91cm mới là 36 inch. Vì vậy Evaluator chỉ cho hai điểm trên mười, mặc dù verdict đúng. Đây chính là trường hợp JFR mà đánh giá accuracy truyền thống sẽ bỏ lọt. [~40s]
+-->
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
 ## Kết quả: 13 LLM (Table 1)
 
 <div style="position:relative; width:1000px; margin:14px auto 0;">
@@ -648,9 +677,29 @@ Kết quả so sánh hai target trên cùng cấu hình: LLaMA-4-Scout đạt Gr
 
 <!-- _footer: '<span>Nhóm 8 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
+## 3 hạn chế paper tự nêu (Limitations)
+
+1. **Định kiến tiềm ẩn (bias):** bộ điều khiển agent (GPT-4o) cũng có định kiến tri thức riêng, tương tự định kiến vốn có của con người, dù đã có cơ chế sửa lỗi.
+2. **Thiếu tri thức cập nhật động:** agent bị giới hạn bởi tri thức tĩnh đã học, khó thích ứng bối cảnh mới → paper đề xuất **RAG** để khắc phục.
+3. **Thiếu cơ chế cải thiện mô hình:** framework chỉ *kiểm định* điểm yếu, chưa tích hợp *preference optimization* để giúp LLM mục tiêu cải thiện.
+
+<div class="box">
+
+Nhóm chọn khai thác **hạn chế (2)**: paper tự đề xuất RAG, và Table 3 cho thấy `[evidence]` dễ hơn `[claim]` rõ rệt, đủ cơ sở để thử nghiệm.
+
+</div>
+
+<!--
+Paper nêu đúng ba hạn chế trong mục Limitations, không chỉ một. Thứ nhất, bộ điều khiển agent là GPT-4o cũng mang định kiến tri thức riêng, giống định kiến của con người. Thứ hai, agent bị giới hạn bởi tri thức tĩnh, khó thích ứng bối cảnh mới, đây là chỗ paper đề xuất RAG. Thứ ba, framework hiện tại chỉ dừng ở kiểm định, chưa có cơ chế giúp cải thiện mô hình như preference optimization. Nhóm chọn khai thác hạn chế thứ hai vì có cơ sở rõ nhất từ Table 3. [~45s]
+-->
+
+---
+
+<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+
 ## Từ Limitation → RAG (đề xuất của nhóm)
 
-> Paper **tự nêu** ở *Limitations*: *"…incorporate advanced techniques such as **Retrieval-Augmented Generation (RAG)**…"*
+> Paper **tự nêu**: *"…incorporate advanced techniques such as **Retrieval-Augmented Generation (RAG)**…"*
 
 <div class="diagram">
 
