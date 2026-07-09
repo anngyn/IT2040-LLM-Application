@@ -61,10 +61,6 @@ Cue-card: chỉ key cần nói + ví dụ cụ thể. Không đọc nguyên văn
 - 3 chỉ số: **IMR** (% Grade≤3, chủ đạo) · **JFR** (verdict đúng nhưng lập luận kém) · **Grade** (1-10).
 - Nhắc: IMR cao = tệ (nhiều lỗi), Grade cao = tốt.
 
-### Slide "Case study JFR" (Fig 6)
-- **Ví dụ cụ thể, kể chi tiết:** claim tre mọc "35 inch/ngày". GPT-4o trả lời verdict **Factual** (đúng) nhưng giải thích ghi "35 inch (91cm)" — sai quy đổi (35 inch ≈ 88,9cm, còn 91cm = 36 inch).
-- Kết quả: Grade chỉ 2/10 dù verdict đúng → đây là JFR bị bắt được, thứ mà đo accuracy thường sẽ bỏ lọt.
-
 ### Slide "Kết quả 13 LLM (Table 1)"
 - GPT-4o IMR thấp nhất (12.02%) → tốt nhất.
 - Điểm hay: Qwen2.5-72B (mã nguồn mở) bám sát nhóm proprietary.
@@ -101,9 +97,12 @@ Cue-card: chỉ key cần nói + ví dụ cụ thể. Không đọc nguyên văn
 
 ## Phần 6: Từ Limitation → RAG
 
-### Slide "3 hạn chế paper tự nêu"
-- Nói **đủ 3**, không chỉ RAG: (1) bias của agent controller (GPT-4o cũng có định kiến tri thức) · (2) thiếu tri thức cập nhật động → chỗ RAG · (3) thiếu cơ chế cải thiện model (preference optimization).
-- Nhóm chọn khai thác (2) vì có cơ sở rõ nhất (Table 3, evidence > claim).
+### Slide "Limitations"
+- Nói đủ 3, mỗi ý kèm 1 ví dụ ngắn (đã có sẵn trên slide, đọc theo):
+  1. **Bias:** agent controller (GPT-4o) mang định kiến riêng — VD ưu tiên nguồn tiếng Anh, bỏ sót context văn hoá khác.
+  2. **Tri thức tĩnh:** agent chỉ biết đến thời điểm train — VD claim về sự kiện mới sau cutoff, model không có gì để đối chiếu → đây là chỗ RAG cần vào.
+  3. **Thiếu cơ chế cải thiện:** framework chỉ kiểm định, không giúp model học lại — VD phát hiện LLaMA yếu "multi-step reasoning" nhưng không fine-tune lại được.
+- Chốt: nhóm khai thác hạn chế (2) vì có cơ sở rõ nhất (Table 3, evidence dễ hơn claim).
 
 ### Slide "Từ Limitation → RAG (đề xuất)"
 - Trích đúng câu paper tự đề xuất RAG.
