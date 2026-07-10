@@ -205,7 +205,7 @@ GVHD: TS. Lưu Thanh Sơn
 
 <div class="dsub">Vì sao cần đánh giá năng lực fact-checking của LLM?</div>
 
-<div class="dmeta">Phần 1 · Trình bày: Tô Huỳnh Minh Tiến</div>
+<div class="dmeta">Phần 1</div>
 
 ---
 
@@ -282,7 +282,7 @@ Về bản chất, đây là một paradigm phân loại tĩnh: không đánh gi
 
 <div class="dsub">3 giai đoạn lặp · Importance Sampling nhắm điểm yếu</div>
 
-<div class="dmeta">Phần 2 · Trình bày: Tô Huỳnh Minh Tiến</div>
+<div class="dmeta">Phần 2</div>
 
 ---
 
@@ -358,7 +358,7 @@ $\Theta_{i+1}\sim\pi(\Theta_{i+1}\mid\Theta_i, M)$: mỗi vòng tập trung vào
 
 <div class="dsub">5 vai trò agent · taxonomy kịch bản · cấu trúc test case</div>
 
-<div class="dmeta">Phần 3 · Trình bày: Trần Tú Quang</div>
+<div class="dmeta">Phần 3</div>
 
 ---
 
@@ -423,9 +423,12 @@ $\Theta_{i+1}\sim\pi(\Theta_{i+1}\mid\Theta_i, M)$: mỗi vòng tập trung vào
 <span class="caption">Appraiser khởi tạo cây kịch bản từ 3 nhóm, mở rộng dần qua các vòng lặp (Lin et al., Fig 3).</span>
 
 <!--
-- Appraiser khởi tạo cây kịch bản từ ba nhóm: Complex Claim, Fake News, Social Rumor, mỗi nhóm nhiều kịch bản con.
+- Appraiser khởi tạo cây kịch bản từ ba nhóm, mỗi nhóm nhiều kịch bản con:
+  + Complex Claim: phát biểu phức tạp, phải suy luận nhiều bước và tổng hợp nhiều dữ kiện, ví dụ so sánh số liệu hay quan hệ nhân quả.
+  + Fake News: tin giả cố ý bịa hoặc xuyên tạc, gồm châm biếm, nội dung sai lệch, ngụy tạo nguồn.
+  + Social Rumor: tin đồn lan trên mạng xã hội, chưa kiểm chứng, thường theo cảm xúc mong đợi hoặc lo sợ.
 - Cây được mở rộng dần qua các vòng lặp khi phát hiện điểm yếu mới.
-[~20s]
+[~30s]
 -->
 
 ---
@@ -479,7 +482,7 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 
 <div class="dsub">IMR · JFR · Grade — đánh giá trên 13 LLM</div>
 
-<div class="dmeta">Phần 4 · Trình bày: Trần Tú Quang</div>
+<div class="dmeta">Phần 4</div>
 
 ---
 
@@ -605,7 +608,7 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 
 <div class="dsub">Nhóm chạy lại framework: baseline · vòng lặp adaptive · so sánh model</div>
 
-<div class="dmeta">Phần 5 · Trình bày: Nguyễn Ấn</div>
+<div class="dmeta">Phần 5</div>
 
 ---
 
@@ -715,7 +718,7 @@ Model mạnh (Gemini Pro) có **IMR thấp hơn hẳn**: khớp tinh thần Tabl
 
 <div class="dsub">Đề xuất mở rộng của nhóm: cấp evidence qua retriever</div>
 
-<div class="dmeta">Phần 6 · Trình bày: Nguyễn Ấn</div>
+<div class="dmeta">Phần 6</div>
 
 ---
 
