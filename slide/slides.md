@@ -163,7 +163,11 @@ GVHD: TS. Lưu Thanh Sơn
 <span class="small">Ho Chi Minh, 07/2026</span>
 
 <!--
-Chào thầy và các bạn. Nhóm 8 xin trình bày đề tài FACT-AUDIT cộng RAG, dựa trên bài báo công bố tại ACL 2025. Phần đầu (cơ sở lý thuyết) do em phụ trách; phần cài đặt và kết quả các bạn trình bày sau. [~25s]
+[TRÌNH BÀY: Tô Huỳnh Minh Tiến]
+- Chào thầy và các bạn, em là Tô Huỳnh Minh Tiến, đại diện nhóm 8.
+- Nhóm em báo cáo đề tài FACT-AUDIT cộng RAG, dựa trên bài báo ở hội nghị ACL 2025.
+- Phân công: em nói bối cảnh và khung FACT-AUDIT; bạn Quang nói năm agent, bộ chỉ số và kết quả; bạn Ấn nói thực nghiệm tái hiện và đề xuất RAG.
+[~25s]
 -->
 
 ---
@@ -172,17 +176,21 @@ Chào thầy và các bạn. Nhóm 8 xin trình bày đề tài FACT-AUDIT cộn
 
 ## Nội dung trình bày
 
-1. **Bối cảnh & động lực**: vì sao cần đánh giá fact-checking của LLM?
-2. **FACT-AUDIT framework**: 3 giai đoạn và Importance Sampling
-3. **Khung 5 agent** và cấu trúc test case
-4. **Metrics & Kết quả**: IMR / JFR / Grade trên 13 LLM
-5. **Thực nghiệm tái hiện**: nhóm chạy lại framework
-6. **Hướng mở rộng: RAG**, đề xuất của nhóm
+1. **Bối cảnh & động lực**: vì sao cần đánh giá fact-checking của LLM? <span class="small">· Tiến</span>
+2. **FACT-AUDIT framework**: 3 giai đoạn và Importance Sampling <span class="small">· Tiến</span>
+3. **Khung 5 agent** và cấu trúc test case <span class="small">· Quang</span>
+4. **Metrics & Kết quả**: IMR / JFR / Grade trên 13 LLM <span class="small">· Quang</span>
+5. **Thực nghiệm tái hiện**: nhóm chạy lại framework <span class="small">· Ấn</span>
+6. **Hướng mở rộng: RAG**, đề xuất của nhóm <span class="small">· Ấn</span>
 
 > Đây là **framework đánh giá năng lực** fact-checking của LLM, không phải kiểm chứng một claim cụ thể.
 
 <!--
-Bài gồm sáu phần: bối cảnh, khung FACT-AUDIT, các agent và dữ liệu kiểm thử, bộ chỉ số và kết quả, phần tái hiện framework do nhóm chạy lại, cuối cùng là đề xuất RAG. Nhấn mạnh: đây là framework ĐÁNH GIÁ năng lực, không phải kiểm chứng một phát biểu cụ thể. [~20s]
+[TRÌNH BÀY: Tô Huỳnh Minh Tiến]
+- Bài gồm sáu phần: bối cảnh, khung FACT-AUDIT, các agent và dữ liệu kiểm thử, bộ chỉ số và kết quả, phần tái hiện framework, và đề xuất RAG.
+- Phân công: hai phần đầu em trình bày, phần ba và bốn bạn Quang, phần năm và sáu bạn Ấn.
+- Nhấn mạnh: đây là framework ĐÁNH GIÁ năng lực, không phải kiểm chứng một phát biểu cụ thể.
+[~20s]
 -->
 
 ---
@@ -197,7 +205,7 @@ Bài gồm sáu phần: bối cảnh, khung FACT-AUDIT, các agent và dữ li�
 
 <div class="dsub">Vì sao cần đánh giá năng lực fact-checking của LLM?</div>
 
-<div class="dmeta">Phần 1</div>
+<div class="dmeta">Phần 1 · Trình bày: Tô Huỳnh Minh Tiến</div>
 
 ---
 
@@ -218,7 +226,10 @@ LLM nhớ rất nhiều kiến thức nên làm khá tốt, nhưng vẫn **nhớ
 </div>
 
 <!--
-Fact-checking nghĩa là đưa mô hình một phát biểu, nó phải vừa phán đúng sai vừa giải thích lý do, với ba nhãn Đúng, Sai, hoặc Chưa đủ thông tin. LLM nhớ nhiều kiến thức nên làm khá tốt nhưng vẫn nhớ sai và suy luận sai. Câu hỏi của bài báo: làm sao tự động chấm điểm năng lực này một cách công bằng, để biết mô hình nào thật sự đáng tin. [~50s]
+- Fact-checking: đưa mô hình một phát biểu, nó phải vừa phán đúng sai vừa giải thích lý do, với ba nhãn Đúng, Sai, hoặc Chưa đủ thông tin.
+- LLM nhớ nhiều kiến thức nên làm khá tốt, nhưng vẫn nhớ sai và suy luận sai.
+- Câu hỏi của bài báo: làm sao tự động chấm điểm năng lực này một cách công bằng, để biết mô hình nào thật sự đáng tin.
+[~50s]
 -->
 
 ---
@@ -253,7 +264,10 @@ Về bản chất, đây là một paradigm phân loại tĩnh: không đánh gi
 > **Verdict đúng ≠ Lập luận đúng**: mô hình có thể dự đoán đúng nhãn nhưng lập luận sai hoặc thiếu cơ sở.
 
 <!--
-Ba hạn chế của cách đánh giá cũ: gán nhãn thủ công tốn kém; dữ liệu tĩnh gây rò rỉ và bão hòa bảng xếp hạng; chỉ đo độ chính xác của nhãn, bỏ qua lập luận. Hình bên phải so sánh pipeline cũ (a) và FACT-AUDIT (b). Ý cốt lõi: dự đoán đúng nhãn không đồng nghĩa lập luận đúng. [~50s]
+- Cách đánh giá cũ có ba hạn chế: gán nhãn thủ công tốn kém; dữ liệu tĩnh gây rò rỉ và bão hòa bảng xếp hạng; chỉ đo độ chính xác của nhãn, bỏ qua lập luận.
+- Hình bên phải so sánh pipeline cũ (a) và FACT-AUDIT (b).
+- Ý cốt lõi: dự đoán đúng nhãn không đồng nghĩa lập luận đúng.
+[~50s]
 -->
 
 ---
@@ -268,7 +282,7 @@ Ba hạn chế của cách đánh giá cũ: gán nhãn thủ công tốn kém; d
 
 <div class="dsub">3 giai đoạn lặp · Importance Sampling nhắm điểm yếu</div>
 
-<div class="dmeta">Phần 2</div>
+<div class="dmeta">Phần 2 · Trình bày: Tô Huỳnh Minh Tiến</div>
 
 ---
 
@@ -301,7 +315,10 @@ $$\mathbb{E}_{q(x)}\!\Big[F_\alpha(x)\tfrac{p(x)}{q(x)}\Big]$$
 <span class="small">$F_\alpha(x)$ = giới hạn hiểu biết của LLM trên case $x$; chọn $q(x)\propto p(x)F_\alpha(x)$ để lấy mẫu hiệu quả.</span>
 
 <!--
-Hai đặc trưng: dữ liệu cập nhật động và chấm cả lập luận. Về toán: thay lấy mẫu Monte Carlo rải đều và chậm bằng Importance Sampling, dùng phân phối q nhắm vào vùng mô hình dễ sai. Nói cách khác, khung chủ động truy lùng điểm yếu thay vì kiểm tra ngẫu nhiên. [~60s]
+- Hai đặc trưng mới: dữ liệu cập nhật động, và chấm sâu cả lập luận chứ không chỉ verdict.
+- Về toán: thay lấy mẫu Monte Carlo rải đều và chậm bằng Importance Sampling, dùng phân phối q nhắm vào vùng mô hình dễ sai.
+- Nói cách khác, khung chủ động truy lùng điểm yếu thay vì kiểm tra ngẫu nhiên.
+[~60s]
 -->
 
 ---
@@ -323,7 +340,10 @@ $\Theta_{i+1}\sim\pi(\Theta_{i+1}\mid\Theta_i, M)$: mỗi vòng tập trung vào
 </div>
 
 <!--
-Ba giai đoạn lặp: Prototype Emulation sinh dữ liệu kiểm thử; Fact Verification chấm điểm cả nhãn lẫn lập luận; Adaptive Updating phân tích chỗ làm kém để cập nhật cây kịch bản. Điểm quan trọng là vòng lặp: mỗi vòng lại nhắm sâu hơn vào điểm yếu của mô hình. [~50s]
+- Ba giai đoạn lặp: Prototype Emulation sinh dữ liệu kiểm thử; Fact Verification chấm điểm cả nhãn lẫn lập luận; Adaptive Updating phân tích chỗ làm kém để cập nhật cây kịch bản.
+- Điểm quan trọng là vòng lặp: mỗi vòng lại nhắm sâu hơn vào điểm yếu của mô hình.
+- Bàn giao: Đó là phần bối cảnh và ý tưởng khung của em. Tiếp theo mời bạn Quang trình bày chi tiết năm agent, cấu trúc test case, cùng bộ chỉ số và kết quả.
+[~50s]
 -->
 
 ---
@@ -338,7 +358,7 @@ Ba giai đoạn lặp: Prototype Emulation sinh dữ liệu kiểm thử; Fact V
 
 <div class="dsub">5 vai trò agent · taxonomy kịch bản · cấu trúc test case</div>
 
-<div class="dmeta">Phần 3</div>
+<div class="dmeta">Phần 3 · Trình bày: Trần Tú Quang</div>
 
 ---
 
@@ -369,7 +389,11 @@ Ba giai đoạn lặp: Prototype Emulation sinh dữ liệu kiểm thử; Fact V
 <span class="caption">Toàn cảnh 5 agent qua 3 giai đoạn, ví dụ thật "thuốc mới chữa tiểu đường" — Lin et al., Fig 2</span>
 
 <!--
-Năm agent: Appraiser xây cây kịch bản; Inquirer sinh đề; Quality Inspector lọc chất lượng và đối chiếu bằng chứng qua Wikipedia; Evaluator chấm điểm theo kiểu trọng tài; Prober dò ra các đề khó hơn. Hình dưới minh hoạ toàn cảnh bằng ví dụ thật về thuốc chữa tiểu đường, kèm bằng chứng và ba chế độ kiểm thử. [~50s]
+[TRÌNH BÀY: Trần Tú Quang]
+- Mở đầu: Cảm ơn Tiến. Em là Quang, xin trình bày năm agent, cấu trúc test case, cùng bộ chỉ số và kết quả.
+- Năm agent: Appraiser xây cây kịch bản; Inquirer sinh đề; Quality Inspector lọc chất lượng và đối chiếu bằng chứng qua Wikipedia; Evaluator chấm điểm theo kiểu trọng tài; Prober dò ra các đề khó hơn.
+- Hình dưới minh hoạ toàn cảnh bằng ví dụ thật về thuốc chữa tiểu đường, kèm bằng chứng và ba chế độ kiểm thử.
+[~50s]
 -->
 
 ---
@@ -387,7 +411,10 @@ Năm agent: Appraiser xây cây kịch bản; Inquirer sinh đề; Quality Inspe
 <span class="caption">Appraiser khởi tạo cây kịch bản từ 3 nhóm, mở rộng dần qua các vòng lặp (Lin et al., Fig 3).</span>
 
 <!--
-Appraiser khởi tạo cây kịch bản từ ba nhóm: Complex Claim, Fake News và Social Rumor. Mỗi nhóm có nhiều kịch bản con, ví dụ tin giả gồm châm biếm, nội dung sai lệch, ngụy tạo. Cây này được mở rộng dần qua các vòng lặp khi phát hiện điểm yếu mới. [~30s]
+- Appraiser khởi tạo cây kịch bản từ ba nhóm: Complex Claim, Fake News và Social Rumor.
+- Mỗi nhóm có nhiều kịch bản con, ví dụ tin giả gồm châm biếm, nội dung sai lệch, ngụy tạo.
+- Cây này được mở rộng dần qua các vòng lặp khi phát hiện điểm yếu mới.
+[~30s]
 -->
 
 ---
@@ -423,7 +450,10 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 </div>
 
 <!--
-Mỗi đề gồm bốn phần: Key Point chỉ dẫn nhiệm vụ, Source Claim là câu cần kiểm chứng, Auxiliary Info là bằng chứng, và Test Mode là bối cảnh. Có ba chế độ: claim, evidence có bằng chứng chuẩn, và wisdom of crowds dùng bình luận. Lưu ý Test Mode, vì đây là nơi RAG sẽ tác động. [~35s]
+- Mỗi đề gồm bốn phần: Key Point chỉ dẫn nhiệm vụ, Source Claim là câu cần kiểm chứng, Auxiliary Info là bằng chứng, và Test Mode là bối cảnh.
+- Ba chế độ Test Mode: claim không bằng chứng, evidence có bằng chứng chuẩn, và wisdom of crowds dùng bình luận.
+- Lưu ý Test Mode, vì đây là nơi RAG sẽ tác động.
+[~35s]
 -->
 
 ---
@@ -438,7 +468,7 @@ Mỗi đề gồm bốn phần: Key Point chỉ dẫn nhiệm vụ, Source Claim
 
 <div class="dsub">IMR · JFR · Grade — đánh giá trên 13 LLM</div>
 
-<div class="dmeta">Phần 4</div>
+<div class="dmeta">Phần 4 · Trình bày: Trần Tú Quang</div>
 
 ---
 
@@ -455,7 +485,11 @@ Mỗi đề gồm bốn phần: Key Point chỉ dẫn nhiệm vụ, Source Claim
 > **JFR** tách được "đoán đúng nhãn nhưng lập luận rỗng", đúng tinh thần *verdict ≠ justification*.
 
 <!--
-Ba chỉ số: IMR là tỉ lệ câu bị chấm từ ba điểm trở xuống, tức có lỗi, đây là chỉ số chủ đạo. JFR là tỉ lệ nhãn đúng nhưng lập luận kém. Grade là điểm một đến mười. Điểm đáng chú ý là JFR: nó bắt đúng trường hợp đoán trúng nhãn nhưng lập luận rỗng. [~40s]
+- IMR: tỉ lệ câu bị chấm từ ba điểm trở xuống, tức có lỗi, đây là chỉ số chủ đạo.
+- JFR: tỉ lệ nhãn đúng nhưng lập luận kém.
+- Grade: điểm một đến mười.
+- Đáng chú ý là JFR: nó bắt đúng trường hợp đoán trúng nhãn nhưng lập luận rỗng.
+[~40s]
 -->
 
 ---
@@ -475,7 +509,11 @@ Ba chỉ số: IMR là tỉ lệ câu bị chấm từ ba điểm trở xuống,
 <span class="caption">GPT-4o đạt IMR thấp nhất (12.02%); Qwen2.5-72B (mã nguồn mở) bám sát. IMR là metric chủ đạo — Lin et al., Table 1.</span>
 
 <!--
-Bảng đầy đủ 13 mô hình với IMR, JFR, Grade ở cả ba nhóm và Overall. Khoanh đỏ: GPT-4o đạt IMR thấp nhất khoảng mười hai phần trăm. Đáng chú ý Qwen2.5-72B mã nguồn mở bám sát nhóm proprietary, dòng LLaMA yếu hơn. Prototype do người và do mô hình tạo cho kết quả gần như nhau, khẳng định tính công bằng. [~40s]
+- Bảng đầy đủ 13 mô hình với IMR, JFR, Grade ở cả ba nhóm và Overall.
+- Khoanh đỏ: GPT-4o đạt IMR thấp nhất, khoảng mười hai phần trăm.
+- Đáng chú ý Qwen2.5-72B mã nguồn mở bám sát nhóm proprietary; dòng LLaMA yếu hơn.
+- Prototype do người và do mô hình tạo cho kết quả gần như nhau, khẳng định tính công bằng.
+[~40s]
 -->
 
 ---
@@ -511,7 +549,10 @@ Bảng đầy đủ 13 mô hình với IMR, JFR, Grade ở cả ba nhóm và Ove
 </div>
 
 <!--
-Hai phân tích bổ sung. Bên trái: hai kịch bản khó nhất của mỗi nhóm, ví dụ suy luận nhiều bước hay tiêu đề lệch nội dung. Bên phải: IMR giảm dần rồi hội tụ qua các vòng probing, chứng minh framework đào đúng vào điểm yếu và quá trình lặp ổn định. [~30s]
+- Hai phân tích bổ sung.
+- Bên trái: hai kịch bản khó nhất của mỗi nhóm, ví dụ suy luận nhiều bước hay tiêu đề lệch nội dung.
+- Bên phải: IMR giảm dần rồi hội tụ qua các vòng probing, chứng minh framework đào đúng vào điểm yếu và quá trình lặp ổn định.
+[~30s]
 -->
 
 ---
@@ -529,7 +570,10 @@ Hai phân tích bổ sung. Bên trái: hai kịch bản khó nhất của mỗi 
 <div class="box"><strong>Có bằng chứng giúp LLM fact-check chính xác hơn đáng kể</strong> (IMR giảm khoảng 2 lần). Đây là cơ sở để tích hợp RAG.</div>
 
 <!--
-Độ khó phụ thuộc mạnh vào chế độ kiểm thử: claim khó nhất, evidence có bằng chứng dễ nhất; với GPT-4o, IMR giảm gần một nửa khi có bằng chứng. Đây chính là quan sát then chốt làm cơ sở để nhóm đề xuất RAG. [~35s]
+- Độ khó phụ thuộc mạnh vào chế độ kiểm thử: claim khó nhất, evidence có bằng chứng dễ nhất; với GPT-4o, IMR giảm gần một nửa khi có bằng chứng.
+- Đây chính là quan sát then chốt làm cơ sở để nhóm đề xuất RAG.
+- Bàn giao: Đến đây là hết phần cơ chế, bộ chỉ số và kết quả của paper. Mời bạn Ấn trình bày phần thực nghiệm tái hiện của nhóm và đề xuất RAG.
+[~35s]
 -->
 
 ---
@@ -544,7 +588,7 @@ Hai phân tích bổ sung. Bên trái: hai kịch bản khó nhất của mỗi 
 
 <div class="dsub">Nhóm chạy lại framework: baseline · vòng lặp adaptive · so sánh model</div>
 
-<div class="dmeta">Phần 5</div>
+<div class="dmeta">Phần 5 · Trình bày: Nguyễn Ấn</div>
 
 ---
 
@@ -582,7 +626,13 @@ Mục tiêu mid-term: chứng minh **tái hiện đúng cơ chế** của paper,
 </div>
 
 <!--
-Nhóm chạy lại framework qua API. Optimizer và Judge cố định là Gemini 2.5 Flash, đóng vai thước đo; Target là model bị kiểm tra, thay đổi giữa các lần chạy. Logic gốc của paper giữ nguyên, chỉ đổi backend sang API. Mỗi lần chạy gồm ba seed ngẫu nhiên cộng bảy case adaptive. Mục tiêu mid-term là tái hiện đúng cơ chế, không phải đạt điểm cao nhất. [~45s]
+[TRÌNH BÀY: Nguyễn Ấn]
+- Mở đầu: Cảm ơn Quang. Em là Ấn, xin trình bày phần thực nghiệm tái hiện của nhóm và đề xuất mở rộng RAG.
+- Nhóm chạy lại framework qua API. Optimizer và Judge cố định là Gemini 2.5 Flash, đóng vai thước đo; Target là model bị kiểm tra, thay đổi giữa các lần chạy.
+- Logic gốc của paper giữ nguyên, chỉ đổi backend sang API.
+- Mỗi lần chạy gồm ba seed ngẫu nhiên cộng bảy case adaptive.
+- Mục tiêu mid-term là tái hiện đúng cơ chế, không phải đạt điểm cao nhất.
+[~45s]
 -->
 
 ---
@@ -604,7 +654,10 @@ Nhóm chạy lại framework qua API. Optimizer và Judge cố định là Gemin
 - **Tầng 2** *(Appraiser)*: phân tích bad case → sinh **kịch bản MỚI** `deductive_causal_reasoning` (suy luận nhân quả nhiều bước) mà taxonomy gốc chưa có
 
 <!--
-Bằng chứng cụ thể cho Importance Sampling: khi chạy LLaMA-4-Scout, case chế độ wisdom of crowds bị điểm ba. Ngay sau đó, sáu trên bảy case adaptive đều rơi vào chế độ wisdom, đúng chỗ mô hình yếu. Đây là phân phối q tự dồn vào vùng điểm thấp. Nhóm cũng tái hiện cả hai tầng adaptive: tầng một sinh case khó hơn trong kịch bản, tầng hai tự sinh kịch bản mới về suy luận nhân quả mà cây phân loại gốc chưa có. [~50s]
+- Bằng chứng cụ thể cho Importance Sampling: khi chạy LLaMA-4-Scout, case chế độ wisdom of crowds bị điểm ba.
+- Ngay sau đó, sáu trên bảy case adaptive đều rơi vào chế độ wisdom, đúng chỗ mô hình yếu. Đây là phân phối q tự dồn vào vùng điểm thấp.
+- Nhóm cũng tái hiện cả hai tầng adaptive: tầng một sinh case khó hơn trong kịch bản; tầng hai tự sinh kịch bản mới về suy luận nhân quả mà cây phân loại gốc chưa có.
+[~50s]
 -->
 
 ---
@@ -627,7 +680,10 @@ Model mạnh (Gemini Pro) có **IMR thấp hơn hẳn**: khớp tinh thần Tabl
 > Model càng mạnh, Importance Sampling càng **khó đào ra điểm yếu** → cần nhiều vòng probing hơn để hội tụ (khớp Fig 5).
 
 <!--
-Kết quả so sánh hai target trên cùng cấu hình: LLaMA-4-Scout đạt Grade tám, IMR hai mươi phần trăm; Gemini 2.5 Pro đạt Grade chín phẩy tám, IMR không phần trăm. Model mạnh có IMR thấp hơn hẳn, đúng tinh thần Table 1 của bài báo. Một nhận xét: model càng mạnh thì Importance Sampling càng khó đào ra điểm yếu, cần nhiều vòng probing hơn để hội tụ, khớp với Figure 5. [~40s]
+- So sánh hai target trên cùng cấu hình: LLaMA-4-Scout đạt Grade tám, IMR hai mươi phần trăm; Gemini 2.5 Pro đạt Grade chín phẩy tám, IMR không phần trăm.
+- Model mạnh có IMR thấp hơn hẳn, đúng tinh thần Table 1 của bài báo.
+- Nhận xét: model càng mạnh thì Importance Sampling càng khó đào ra điểm yếu, cần nhiều vòng probing hơn để hội tụ, khớp với Figure 5.
+[~40s]
 -->
 
 ---
@@ -642,7 +698,7 @@ Kết quả so sánh hai target trên cùng cấu hình: LLaMA-4-Scout đạt Gr
 
 <div class="dsub">Đề xuất mở rộng của nhóm: cấp evidence qua retriever</div>
 
-<div class="dmeta">Phần 6</div>
+<div class="dmeta">Phần 6 · Trình bày: Nguyễn Ấn</div>
 
 ---
 
@@ -678,7 +734,12 @@ Nhóm khai thác **hạn chế (2)**: paper tự đề xuất RAG, Table 3 cho t
 </div>
 
 <!--
-Ba hạn chế. Thứ nhất, agent controller GPT-4o cũng mang định kiến tri thức riêng, ví dụ có thể ưu tiên nguồn tiếng Anh. Thứ hai, agent chỉ dùng tri thức tĩnh đã học, ví dụ không biết các sự kiện xảy ra sau thời điểm training, đây là chỗ RAG cần cho vào. Thứ ba, framework chỉ kiểm định điểm yếu chứ chưa có cơ chế giúp model cải thiện, ví dụ phát hiện LLaMA yếu ở suy luận nhiều bước nhưng không fine-tune lại được. Nhóm khai thác hạn chế thứ hai vì có cơ sở rõ nhất từ Table 3. [~45s]
+- Ba hạn chế.
+- Một: agent controller GPT-4o cũng mang định kiến tri thức riêng, ví dụ có thể ưu tiên nguồn tiếng Anh.
+- Hai: agent chỉ dùng tri thức tĩnh đã học, ví dụ không biết các sự kiện sau thời điểm training, đây là chỗ RAG cần cho vào.
+- Ba: framework chỉ kiểm định điểm yếu chứ chưa giúp model cải thiện, ví dụ phát hiện LLaMA yếu ở suy luận nhiều bước nhưng không fine-tune lại được.
+- Nhóm khai thác hạn chế thứ hai vì có cơ sở rõ nhất từ Table 3.
+[~45s]
 -->
 
 ---
@@ -704,7 +765,12 @@ Ba hạn chế. Thứ nhất, agent controller GPT-4o cũng mang định kiến 
 </div>
 
 <!--
-Đề xuất xuất phát trực tiếp từ bài báo: chính tác giả nêu RAG trong mục Limitations. Nhóm cắm một retriever trước mô hình mục tiêu, lấy bằng chứng liên quan rồi ghép vào prompt. Giả thuyết: việc này đưa trường hợp claim tiệm cận evidence, kỳ vọng giảm IMR và JFR. Nhưng có một câu hỏi để ngỏ: evidence trong bài báo là gold, do người soạn chuẩn; còn RAG thực tế lấy evidence tự động, nếu truy xuất kém liên quan thì chưa chắc giảm IMR. Kết quả so sánh cụ thể nhóm sẽ trình bày ở báo cáo cuối kỳ. [~55s]
+- Đề xuất xuất phát trực tiếp từ bài báo: chính tác giả nêu RAG trong mục Limitations.
+- Nhóm cắm một retriever trước mô hình mục tiêu, lấy bằng chứng liên quan rồi ghép vào prompt.
+- Giả thuyết: việc này đưa trường hợp claim tiệm cận evidence, kỳ vọng giảm IMR và JFR.
+- Câu hỏi để ngỏ: evidence trong bài báo là gold do người soạn; còn RAG thực tế lấy evidence tự động, nếu truy xuất kém liên quan thì chưa chắc giảm IMR.
+- Kết quả so sánh cụ thể nhóm sẽ trình bày ở báo cáo cuối kỳ.
+[~55s]
 -->
 
 ---
@@ -741,7 +807,10 @@ Cốt lõi: từ **hiểu paper** → **tái hiện được** → **đề xuấ
 </div>
 
 <!--
-Tổng kết phần mid-term. Nhóm đã hiểu và trình bày cơ chế FACT-AUDIT, tái hiện framework qua API, xác nhận Importance Sampling thực sự nhắm vào điểm yếu, tái hiện cả hai tầng adaptive, và so sánh được các model. Hướng cuối kỳ: cắm retriever để làm RAG, so sánh baseline với RAG trên cùng tập claim, và phân tích ảnh hưởng của chất lượng retrieval lên IMR. Mạch xuyên suốt: hiểu paper, tái hiện được, rồi đề xuất mở rộng có cơ sở. [~40s]
+- Tổng kết mid-term. Nhóm đã hiểu và trình bày cơ chế FACT-AUDIT, tái hiện framework qua API, xác nhận Importance Sampling thực sự nhắm vào điểm yếu, tái hiện cả hai tầng adaptive, và so sánh được các model.
+- Hướng cuối kỳ: cắm retriever để làm RAG, so sánh baseline với RAG trên cùng tập claim, và phân tích ảnh hưởng của chất lượng retrieval lên IMR.
+- Mạch xuyên suốt: hiểu paper, tái hiện được, rồi đề xuất mở rộng có cơ sở.
+[~40s]
 -->
 
 <!--
@@ -765,5 +834,8 @@ Lin et al., *FACT-AUDIT*, ACL 2025 · arXiv 2502.17924
 <span class="small">University of Information Technology, VNU-HCM (UIT)</span>
 
 <!--
-Đó là phần cơ sở lý thuyết. Em xin chuyển sang phần cài đặt do bạn Tiến trình bày. Em xin cảm ơn thầy và các bạn. [~15s]
+[TRÌNH BÀY: Nguyễn Ấn]
+- Trên đây là toàn bộ báo cáo mid-term của nhóm 8: từ cơ sở lý thuyết và khung FACT-AUDIT, đến bộ chỉ số cùng kết quả, thực nghiệm tái hiện, và đề xuất mở rộng RAG.
+- Nhóm em xin cảm ơn thầy và các bạn đã lắng nghe, rất mong nhận được góp ý.
+[~15s]
 -->
