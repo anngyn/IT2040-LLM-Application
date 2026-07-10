@@ -1,7 +1,7 @@
 ---
 marp: true
 title: "FACT-AUDIT"
-author: "Nhóm 8 · IT2040"
+author: "Nhóm 15 · IT2040"
 paginate: true
 html: true
 math: katex
@@ -138,7 +138,7 @@ style: |
   .hl { position:absolute; border:3px solid #e11d48; border-radius:8px; z-index:30; pointer-events:none;
         box-shadow:0 0 0 2px rgba(225,29,72,.12); }
   .hl-oval { border-radius:50%; }
-footer: '<span>Nhóm 8 · IT2040</span><span>FACT-AUDIT</span><span>Ho Chi Minh, 07/2026</span><span></span>'
+footer: '<span>Nhóm 15 · IT2040</span><span>FACT-AUDIT</span><span>Ho Chi Minh, 07/2026</span><span></span>'
 header: '<img src="assets/UIT_logo.svg" alt="UIT">'
 ---
 
@@ -164,7 +164,7 @@ GVHD: TS. Lưu Thanh Sơn
 
 <!--
 [TRÌNH BÀY: Tô Huỳnh Minh Tiến]
-- Chào thầy và các bạn, em là Tô Huỳnh Minh Tiến, đại diện nhóm 8.
+- Chào thầy và các bạn, em là Tô Huỳnh Minh Tiến, đại diện Nhóm 15.
 - Nhóm em báo cáo đề tài FACT-AUDIT cộng RAG, dựa trên bài báo ở hội nghị ACL 2025.
 - Phân công: em nói bối cảnh và khung FACT-AUDIT; bạn Quang nói năm agent, bộ chỉ số và kết quả; bạn Ấn nói thực nghiệm tái hiện và đề xuất RAG.
 [~25s]
@@ -172,7 +172,7 @@ GVHD: TS. Lưu Thanh Sơn
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>FACT-AUDIT</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>FACT-AUDIT</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Nội dung trình bày
 
@@ -209,7 +209,7 @@ GVHD: TS. Lưu Thanh Sơn
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>1. Bối cảnh & động lực</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>1. Bối cảnh & động lực</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Bài toán & câu hỏi trung tâm
 
@@ -234,7 +234,7 @@ LLM nhớ rất nhiều kiến thức nên làm khá tốt, nhưng vẫn **nhớ
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>1. Bối cảnh & động lực</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>1. Bối cảnh & động lực</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Hạn chế của các phương pháp đánh giá hiện có
 
@@ -286,7 +286,7 @@ Về bản chất, đây là một paradigm phân loại tĩnh: không đánh gi
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>2. FACT-AUDIT framework</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>2. FACT-AUDIT framework</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## FACT-AUDIT: ý tưởng cốt lõi
 
@@ -323,7 +323,7 @@ $$\mathbb{E}_{q(x)}\!\Big[F_\alpha(x)\tfrac{p(x)}{q(x)}\Big]$$
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>2. FACT-AUDIT framework</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>2. FACT-AUDIT framework</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Pipeline 3 giai đoạn (vòng lặp)
 
@@ -362,7 +362,7 @@ $\Theta_{i+1}\sim\pi(\Theta_{i+1}\mid\Theta_i, M)$: mỗi vòng tập trung vào
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Khung 5 Agent
 
@@ -400,20 +400,17 @@ $\Theta_{i+1}\sim\pi(\Theta_{i+1}\mid\Theta_i, M)$: mỗi vòng tập trung vào
 
 <!--
 [TRÌNH BÀY: Trần Tú Quang]
-- Mở đầu: Cảm ơn Tiến. Em là Quang, xin trình bày năm agent, cấu trúc test case, cùng bộ chỉ số và kết quả.
-- Toàn bộ framework vận hành nhờ năm agent phối hợp qua ba giai đoạn: sinh đề, chấm điểm, rồi cập nhật.
-- Appraiser là "kiến trúc sư": giai đoạn một dựng cây kịch bản, giai đoạn ba cập nhật lại cây theo chỗ mô hình làm kém.
-- Inquirer dựa vào cây đó sinh đề, tức prototype test data cho từng kịch bản.
-- Quality Inspector đóng vai kiểm duyệt: lọc chất lượng và độ đa dạng của đề, đồng thời đối chiếu bằng chứng thật qua Wikipedia API để đề không sai dữ kiện.
-- Evaluator là trọng tài, đóng vai LLM-as-a-Judge, chấm Grade từ một đến mười, rồi lưu vào Memory Pool M. M gồm bốn thứ: test case, câu trả lời, điểm, và nhận xét.
-- Prober đọc Memory Pool M đó, dò lặp để sinh các đề khó hơn, nhắm đúng chỗ mô hình vừa sai.
-- Hình dưới minh hoạ toàn cảnh năm agent qua ba giai đoạn, bằng ví dụ thật về một loại thuốc mới chữa tiểu đường, kèm bằng chứng và ba chế độ kiểm thử.
-[~70s]
+- Cảm ơn Tiến. Em là Quang, xin trình bày năm agent, cấu trúc test case, cùng bộ chỉ số và kết quả.
+- Framework vận hành nhờ năm agent qua ba giai đoạn: sinh đề, chấm điểm, cập nhật.
+- Appraiser dựng và cập nhật cây kịch bản; Inquirer sinh đề; Quality Inspector lọc chất lượng và đối chiếu bằng chứng qua Wikipedia API.
+- Evaluator đóng vai LLM-as-a-Judge, chấm Grade một đến mười, lưu vào Memory Pool M gồm test case, câu trả lời, điểm, nhận xét.
+- Prober đọc M, dò lặp sinh đề khó hơn, nhắm đúng chỗ mô hình vừa sai.
+[~45s]
 -->
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Taxonomy kịch bản fact-checking
 
@@ -426,15 +423,14 @@ $\Theta_{i+1}\sim\pi(\Theta_{i+1}\mid\Theta_i, M)$: mỗi vòng tập trung vào
 <span class="caption">Appraiser khởi tạo cây kịch bản từ 3 nhóm, mở rộng dần qua các vòng lặp (Lin et al., Fig 3).</span>
 
 <!--
-- Appraiser khởi tạo cây kịch bản từ ba nhóm: Complex Claim, Fake News và Social Rumor.
-- Mỗi nhóm có nhiều kịch bản con, ví dụ tin giả gồm châm biếm, nội dung sai lệch, ngụy tạo.
-- Cây này được mở rộng dần qua các vòng lặp khi phát hiện điểm yếu mới.
-[~30s]
+- Appraiser khởi tạo cây kịch bản từ ba nhóm: Complex Claim, Fake News, Social Rumor, mỗi nhóm nhiều kịch bản con.
+- Cây được mở rộng dần qua các vòng lặp khi phát hiện điểm yếu mới.
+[~20s]
 -->
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>3. Khung 5 agent</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Cấu trúc một test case
 
@@ -465,10 +461,10 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 </div>
 
 <!--
-- Mỗi đề gồm bốn phần: Key Point chỉ dẫn nhiệm vụ, Source Claim là câu cần kiểm chứng, Auxiliary Info là bằng chứng, và Test Mode là bối cảnh.
-- Ba chế độ Test Mode: claim không bằng chứng, evidence có bằng chứng chuẩn, và wisdom of crowds dùng bình luận.
+- Mỗi đề gồm bốn phần: Key Point, Source Claim, Auxiliary Info, và Test Mode.
+- Ba chế độ Test Mode: claim không bằng chứng, evidence có bằng chứng chuẩn, wisdom of crowds dùng bình luận.
 - Lưu ý Test Mode, vì đây là nơi RAG sẽ tác động.
-[~35s]
+[~25s]
 -->
 
 ---
@@ -487,7 +483,7 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Metrics đánh giá
 
@@ -500,17 +496,17 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 > **Vì sao cần JFR?** Nó bắt được ca "đoán trúng nhãn nhưng lập luận rỗng", điều mà cách chỉ đo đúng/sai nhãn thông thường bỏ sót.
 
 <!--
-- Bộ ba chỉ số, tất cả suy ra từ điểm Grade của Evaluator.
-- IMR, tức Insight Mastery Rate, là chỉ số chủ đạo: tỉ lệ phần trăm câu bị chấm từ ba điểm trở xuống trên tổng số câu, tức tỉ lệ câu có lỗi. IMR càng thấp thì mô hình càng tốt.
-- JFR, tức Justification Flaw Rate: tỉ lệ phần trăm câu mà mô hình phán ĐÚNG nhãn nhưng phần lập luận lại KÉM. JFR càng thấp càng tốt.
-- Grade là điểm Evaluator chấm theo kiểu trọng tài, thang một đến mười, càng cao càng tốt. Quy tắc quan trọng: nếu mô hình sai ở verdict HOẶC ở justification thì Evaluator bị buộc không cho quá ba điểm, nên ngưỡng ba điểm mới thành ranh giới của IMR.
-- Đáng chú ý nhất là JFR: nó tách được đúng trường hợp đoán trúng nhãn nhưng lập luận rỗng, đúng tinh thần verdict khác justification.
-[~55s]
+- Bộ ba chỉ số, đều suy ra từ điểm Grade của Evaluator.
+- IMR là chỉ số chủ đạo: tỉ lệ câu bị chấm từ ba điểm trở xuống, tức tỉ lệ câu có lỗi, càng thấp càng tốt.
+- JFR: tỉ lệ câu đoán ĐÚNG nhãn nhưng lập luận KÉM, càng thấp càng tốt.
+- Grade thang một đến mười, càng cao càng tốt; sai verdict hoặc justification là bị chặn ở ba điểm.
+- Điểm hay của JFR là bắt được ca đoán trúng nhãn nhưng lập luận rỗng.
+[~35s]
 -->
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Kết quả: 13 LLM (Table 1)
 
@@ -531,17 +527,15 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 </div>
 
 <!--
-- Bảng đầy đủ 13 mô hình với IMR, JFR, Grade ở cả ba nhóm và Overall.
-- Setup: mười mô hình mã nguồn mở và ba mô hình proprietary, suy luận zero-shot, temperature bằng không nên tái lập được.
-- Khoanh đỏ: GPT-4o đạt IMR thấp nhất, khoảng mười hai phần trăm.
-- Đáng chú ý Qwen2.5-72B mã nguồn mở bám sát nhóm proprietary; dòng LLaMA yếu hơn.
-- Prototype do người và do mô hình tạo cho IMR gần như nhau, tức Table 2, khẳng định tính công bằng.
-[~45s]
+- Bảng đầy đủ 13 mô hình với IMR, JFR, Grade.
+- Setup: mười mã nguồn mở, ba proprietary, zero-shot, temperature bằng không nên tái lập được.
+- Khoanh đỏ: GPT-4o đạt IMR thấp nhất, khoảng mười hai phần trăm; Qwen2.5-72B mã nguồn mở bám sát nhóm proprietary.
+[~30s]
 -->
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Phân tích sâu
 
@@ -572,17 +566,15 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 </div>
 
 <!--
-- Hai phân tích bổ sung.
-- Bên trái là kịch bản khó nhất mỗi nhóm: Complex Claim khó nhất ở suy luận nhiều bước; Fake News ở tiêu đề lệch nội dung; Social Rumor ở tin đồn kiểu mong đợi hoặc lo sợ.
-- Bên phải: IMR giảm dần rồi hội tụ qua các vòng probing, chứng minh framework đào đúng vào điểm yếu và quá trình lặp ổn định.
-- Ý nghĩa: framework không chỉ chấm điểm mà còn chỉ đúng điểm yếu cụ thể qua Fig 4; vòng lặp hội tụ ở Fig 5 chứng tỏ Importance Sampling đào đúng chỗ chứ không ngẫu nhiên.
-- Cầu nối: chính suy luận nhiều bước, tức Multi-Step Reasoning, là kịch bản mà Prober của nhóm tự sinh lại thành deductive_causal_reasoning ở Phần 5 thực nghiệm, nên nhóm đã tái hiện đúng cái paper phát hiện.
-[~45s]
+- Hai phân tích bổ sung. Bên trái là kịch bản khó nhất mỗi nhóm, đứng đầu là suy luận nhiều bước.
+- Bên phải: IMR giảm dần rồi hội tụ qua các vòng probing, chứng tỏ Importance Sampling đào đúng điểm yếu chứ không ngẫu nhiên.
+- Chính suy luận nhiều bước là kịch bản Prober của nhóm tự sinh lại ở Phần 5 thực nghiệm.
+[~25s]
 -->
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>4. Metrics & Kết quả</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Test Mode quyết định độ khó
 
@@ -595,11 +587,10 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 <div class="box"><strong>Có bằng chứng giúp LLM fact-check chính xác hơn đáng kể</strong> (IMR giảm khoảng 2 lần). 3 mode = phổ chất lượng evidence: <code>[claim]</code> là <strong>baseline</strong> (chưa RAG), <code>[evidence]</code> là <strong>trần trên</strong> (RAG lý tưởng); RAG thực tế nằm giữa, tùy chất lượng retriever.</div>
 
 <!--
-- Độ khó phụ thuộc mạnh vào chế độ kiểm thử: claim khó nhất, evidence có bằng chứng dễ nhất; với GPT-4o, IMR giảm gần một nửa khi có bằng chứng.
-- Đây chính là quan sát then chốt làm cơ sở để nhóm đề xuất RAG.
-- Ánh xạ sang RAG: claim là baseline chưa có bằng chứng, evidence là trần trên khi retrieval hoàn hảo; wisdom of crowds cho thấy ngay cả evidence nhiễu cũng giúp, nên RAG thực tế nằm giữa hai mốc, tùy chất lượng retriever.
-- Bàn giao: Đến đây là hết phần cơ chế, bộ chỉ số và kết quả của paper. Mời bạn Ấn trình bày phần thực nghiệm tái hiện của nhóm và đề xuất RAG.
-[~40s]
+- Độ khó phụ thuộc chế độ kiểm thử: claim khó nhất, evidence dễ nhất; với GPT-4o, IMR giảm gần một nửa khi có bằng chứng.
+- Đây là quan sát then chốt làm cơ sở đề xuất RAG: claim là baseline, evidence là trần trên, RAG thực tế nằm giữa tùy chất lượng retriever.
+- Bàn giao: hết phần cơ chế, chỉ số và kết quả của paper. Mời bạn Ấn trình bày phần thực nghiệm tái hiện và đề xuất RAG.
+[~30s]
 -->
 
 ---
@@ -618,7 +609,7 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Cấu hình tái hiện
 
@@ -663,7 +654,7 @@ Mục tiêu mid-term: chứng minh **tái hiện đúng cơ chế** của paper,
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Bằng chứng: Importance Sampling nhắm điểm yếu
 
@@ -688,7 +679,7 @@ Mục tiêu mid-term: chứng minh **tái hiện đúng cơ chế** của paper,
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>5. Thực nghiệm tái hiện</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Kết quả: framework phân biệt được model
 
@@ -728,7 +719,7 @@ Model mạnh (Gemini Pro) có **IMR thấp hơn hẳn**: khớp tinh thần Tabl
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Limitations
 
@@ -770,7 +761,7 @@ Nhóm khai thác **hạn chế (2)**: paper tự đề xuất RAG, Table 3 cho t
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Từ Limitation → RAG (đề xuất của nhóm)
 
@@ -801,7 +792,7 @@ Nhóm khai thác **hạn chế (2)**: paper tự đề xuất RAG, Table 3 cho t
 
 ---
 
-<!-- _footer: '<span>Nhóm 8 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
+<!-- _footer: '<span>Nhóm 15 · IT2040</span><span>6. Từ Limitation → RAG</span><span>Ho Chi Minh, 07/2026</span><span></span>' -->
 
 ## Tổng kết mid-term
 
@@ -853,7 +844,7 @@ KẾT: chuyển tiếp sang lời cảm ơn.
 
 </div>
 
-**Nhóm 8 · IT2040**
+**Nhóm 15 · IT2040**
 Trần Tú Quang · Tô Huỳnh Minh Tiến · Nguyễn Ấn
 Lin et al., *FACT-AUDIT*, ACL 2025 · arXiv 2502.17924
 
@@ -861,7 +852,7 @@ Lin et al., *FACT-AUDIT*, ACL 2025 · arXiv 2502.17924
 
 <!--
 [TRÌNH BÀY: Nguyễn Ấn]
-- Trên đây là toàn bộ báo cáo mid-term của nhóm 8: từ cơ sở lý thuyết và khung FACT-AUDIT, đến bộ chỉ số cùng kết quả, thực nghiệm tái hiện, và đề xuất mở rộng RAG.
+- Trên đây là toàn bộ báo cáo mid-term của Nhóm 15: từ cơ sở lý thuyết và khung FACT-AUDIT, đến bộ chỉ số cùng kết quả, thực nghiệm tái hiện, và đề xuất mở rộng RAG.
 - Nhóm em xin cảm ơn thầy và các bạn đã lắng nghe, rất mong nhận được góp ý.
 [~15s]
 -->
