@@ -367,33 +367,48 @@ $\Theta_{i+1}\sim\pi(\Theta_{i+1}\mid\Theta_i, M)$: mỗi vòng tập trung vào
 ## Khung 5 Agent
 
 <style scoped>
-  section { padding-top: 78px; }
+  section { padding-top: 78px; font-size: 20px; }
   ul { margin: 4px 0; }
   ul li { margin: 6px 0; }
   .diagram { margin-top: 4px; }
-  .diagram img { max-height: 360px; }
+  .diagram img { max-height: 340px; }
+  .stbadge { position:absolute; z-index:20; width:28px; height:28px; border-radius:50%;
+    background:linear-gradient(135deg,#16294d,#2a6df4); color:#fff; font-weight:800;
+    font-size:16px; line-height:28px; text-align:center;
+    box-shadow:0 2px 7px rgba(15,29,56,.4); border:2px solid #fff; }
 </style>
 
 - **Appraiser** *(stage 1 & 3)*: xây & **cập nhật taxonomy** kịch bản
 - **Inquirer** *(1)*: sinh **prototype test data**
 - **Quality Inspector** *(1)*: kiểm **chất lượng & đa dạng**, validate evidence (Wiki API)
-- **Evaluator** *(2)*: **LLM-as-a-Judge**, chấm **Grade 1–10**, lưu $M$
+- **Evaluator** *(2)*: **LLM-as-a-Judge**, chấm **Grade 1–10**, lưu **Memory Pool** $M=\{x,r,s,c\}$
 - **Prober** *(2)*: **probing lặp** từ $M$ → sinh case khó hơn
 
-<div class="diagram" style="margin-top:4px;">
+<span class="small"><strong>Memory Pool</strong> $M=\{x, r, s, c\}$: test case, response, score, comment · nhật ký nối Evaluator với Prober.</span>
+
+<div class="diagram" style="margin-top:4px; position:relative; width:900px; margin-left:auto; margin-right:auto;">
 
 ![w:900px](assets/paper_fig2.png)
 
+<div class="stbadge" style="left:190px; top:104px;">1</div>
+<div class="stbadge" style="left:200px; top:206px;">2</div>
+<div class="stbadge" style="left:258px; top:158px;">3</div>
+
 </div>
 
-<span class="caption">Toàn cảnh 5 agent qua 3 giai đoạn, ví dụ thật "thuốc mới chữa tiểu đường" — Lin et al., Fig 2</span>
+<span class="caption">3 giai đoạn: (1) Prototype Emulation · (2) Fact Verification + Probing · (3) Adaptive Updating. Ví dụ "thuốc mới chữa tiểu đường", Lin et al., Fig 2</span>
 
 <!--
 [TRÌNH BÀY: Trần Tú Quang]
 - Mở đầu: Cảm ơn Tiến. Em là Quang, xin trình bày năm agent, cấu trúc test case, cùng bộ chỉ số và kết quả.
-- Năm agent: Appraiser xây cây kịch bản; Inquirer sinh đề; Quality Inspector lọc chất lượng và đối chiếu bằng chứng qua Wikipedia; Evaluator chấm điểm theo kiểu trọng tài; Prober dò ra các đề khó hơn.
-- Hình dưới minh hoạ toàn cảnh bằng ví dụ thật về thuốc chữa tiểu đường, kèm bằng chứng và ba chế độ kiểm thử.
-[~50s]
+- Toàn bộ framework vận hành nhờ năm agent phối hợp qua ba giai đoạn: sinh đề, chấm điểm, rồi cập nhật.
+- Appraiser là "kiến trúc sư": giai đoạn một dựng cây kịch bản, giai đoạn ba cập nhật lại cây theo chỗ mô hình làm kém.
+- Inquirer dựa vào cây đó sinh đề, tức prototype test data cho từng kịch bản.
+- Quality Inspector đóng vai kiểm duyệt: lọc chất lượng và độ đa dạng của đề, đồng thời đối chiếu bằng chứng thật qua Wikipedia API để đề không sai dữ kiện.
+- Evaluator là trọng tài, đóng vai LLM-as-a-Judge, chấm Grade từ một đến mười, rồi lưu vào Memory Pool M. M gồm bốn thứ: test case, câu trả lời, điểm, và nhận xét.
+- Prober đọc Memory Pool M đó, dò lặp để sinh các đề khó hơn, nhắm đúng chỗ mô hình vừa sai.
+- Hình dưới minh hoạ toàn cảnh năm agent qua ba giai đoạn, bằng ví dụ thật về một loại thuốc mới chữa tiểu đường, kèm bằng chứng và ba chế độ kiểm thử.
+[~70s]
 -->
 
 ---
@@ -476,20 +491,21 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 
 ## Metrics đánh giá
 
-| Metric | Nghĩa | Tốt |
+| Metric | Ý nghĩa | Tốt khi |
 |---|---|---|
-| **IMR**: *Insight Mastery Rate* | % câu **Grade ≤ 3** (có lỗi), *metric chủ đạo* | ↓ |
-| **JFR**: *Justification Flaw Rate* | % case **verdict đúng nhưng lập luận kém** | ↓ |
-| **Grade** | Điểm Evaluator **1–10** (≤3 nếu sai verdict *hoặc* justification) | ↑ |
+| **IMR**: *Insight Mastery Rate* | Tỉ lệ số câu bị chấm **Grade ≤ 3/10** (tức trả lời có lỗi). *Chỉ số chính.* | **càng thấp** |
+| **JFR**: *Justification Flaw Rate* | Tỉ lệ số câu **đoán đúng nhãn nhưng lập luận sai/rỗng** | **càng thấp** |
+| **Grade** | Điểm giám khảo (Evaluator) chấm **1–10**. Bị **≤ 3** nếu sai nhãn *hoặc* lập luận | **càng cao** |
 
-> **JFR** tách được "đoán đúng nhãn nhưng lập luận rỗng", đúng tinh thần *verdict ≠ justification*.
+> **Vì sao cần JFR?** Nó bắt được ca "đoán trúng nhãn nhưng lập luận rỗng", điều mà cách chỉ đo đúng/sai nhãn thông thường bỏ sót.
 
 <!--
-- IMR: tỉ lệ câu bị chấm từ ba điểm trở xuống, tức có lỗi, đây là chỉ số chủ đạo.
-- JFR: tỉ lệ nhãn đúng nhưng lập luận kém.
-- Grade: điểm một đến mười.
-- Đáng chú ý là JFR: nó bắt đúng trường hợp đoán trúng nhãn nhưng lập luận rỗng.
-[~40s]
+- Bộ ba chỉ số, tất cả suy ra từ điểm Grade của Evaluator.
+- IMR, tức Insight Mastery Rate, là chỉ số chủ đạo: tỉ lệ phần trăm câu bị chấm từ ba điểm trở xuống trên tổng số câu, tức tỉ lệ câu có lỗi. IMR càng thấp thì mô hình càng tốt.
+- JFR, tức Justification Flaw Rate: tỉ lệ phần trăm câu mà mô hình phán ĐÚNG nhãn nhưng phần lập luận lại KÉM. JFR càng thấp càng tốt.
+- Grade là điểm Evaluator chấm theo kiểu trọng tài, thang một đến mười, càng cao càng tốt. Quy tắc quan trọng: nếu mô hình sai ở verdict HOẶC ở justification thì Evaluator bị buộc không cho quá ba điểm, nên ngưỡng ba điểm mới thành ranh giới của IMR.
+- Đáng chú ý nhất là JFR: nó tách được đúng trường hợp đoán trúng nhãn nhưng lập luận rỗng, đúng tinh thần verdict khác justification.
+[~55s]
 -->
 
 ---
@@ -502,18 +518,25 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 
 ![w:1000px](assets/paper_table1.png)
 
-<div class="hl" style="left:793px; top:363px; width:72px; height:30px;"></div>
+<div class="hl" style="left:805px; top:374px; width:70px; height:28px;"></div>
 
 </div>
 
+<div class="center">
+
 <span class="caption">GPT-4o đạt IMR thấp nhất (12.02%); Qwen2.5-72B (mã nguồn mở) bám sát. IMR là metric chủ đạo — Lin et al., Table 1.</span>
+
+<span class="small">Setup: 13 LLM = 10 open-source + 3 proprietary · suy luận zero-shot · temperature = 0 (tái lập được). Human và LLM tạo prototype cho IMR tương đương (Table 2).</span>
+
+</div>
 
 <!--
 - Bảng đầy đủ 13 mô hình với IMR, JFR, Grade ở cả ba nhóm và Overall.
+- Setup: mười mô hình mã nguồn mở và ba mô hình proprietary, suy luận zero-shot, temperature bằng không nên tái lập được.
 - Khoanh đỏ: GPT-4o đạt IMR thấp nhất, khoảng mười hai phần trăm.
 - Đáng chú ý Qwen2.5-72B mã nguồn mở bám sát nhóm proprietary; dòng LLaMA yếu hơn.
-- Prototype do người và do mô hình tạo cho kết quả gần như nhau, khẳng định tính công bằng.
-[~40s]
+- Prototype do người và do mô hình tạo cho IMR gần như nhau, tức Table 2, khẳng định tính công bằng.
+[~45s]
 -->
 
 ---
@@ -550,9 +573,11 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 
 <!--
 - Hai phân tích bổ sung.
-- Bên trái: hai kịch bản khó nhất của mỗi nhóm, ví dụ suy luận nhiều bước hay tiêu đề lệch nội dung.
+- Bên trái là kịch bản khó nhất mỗi nhóm: Complex Claim khó nhất ở suy luận nhiều bước; Fake News ở tiêu đề lệch nội dung; Social Rumor ở tin đồn kiểu mong đợi hoặc lo sợ.
 - Bên phải: IMR giảm dần rồi hội tụ qua các vòng probing, chứng minh framework đào đúng vào điểm yếu và quá trình lặp ổn định.
-[~30s]
+- Ý nghĩa: framework không chỉ chấm điểm mà còn chỉ đúng điểm yếu cụ thể qua Fig 4; vòng lặp hội tụ ở Fig 5 chứng tỏ Importance Sampling đào đúng chỗ chứ không ngẫu nhiên.
+- Cầu nối: chính suy luận nhiều bước, tức Multi-Step Reasoning, là kịch bản mà Prober của nhóm tự sinh lại thành deductive_causal_reasoning ở Phần 5 thực nghiệm, nên nhóm đã tái hiện đúng cái paper phát hiện.
+[~45s]
 -->
 
 ---
@@ -561,19 +586,20 @@ Test Mode chính là chỗ **RAG** sẽ tác động.
 
 ## Test Mode quyết định độ khó
 
-| Test Mode | Độ khó | GPT-4o IMR |
-|---|---|---|
-| `[claim]` | **Khó nhất** | 23.1% |
-| `[wisdom of crowds]` | Trung bình | 15.4% |
-| `[evidence]` | **Dễ nhất** | **10.6%** |
+| Test Mode | Độ khó | GPT-4o IMR | Ánh xạ RAG |
+|---|---|---|---|
+| `[claim]` | **Khó nhất** | 23.1% | RAG tắt · **baseline** |
+| `[wisdom of crowds]` | Trung bình | 15.4% | evidence nhiễu |
+| `[evidence]` | **Dễ nhất** | **10.6%** | retrieval hoàn hảo · **trần** |
 
-<div class="box"><strong>Có bằng chứng giúp LLM fact-check chính xác hơn đáng kể</strong> (IMR giảm khoảng 2 lần). Đây là cơ sở để tích hợp RAG.</div>
+<div class="box"><strong>Có bằng chứng giúp LLM fact-check chính xác hơn đáng kể</strong> (IMR giảm khoảng 2 lần). 3 mode = phổ chất lượng evidence: <code>[claim]</code> là <strong>baseline</strong> (chưa RAG), <code>[evidence]</code> là <strong>trần trên</strong> (RAG lý tưởng); RAG thực tế nằm giữa, tùy chất lượng retriever.</div>
 
 <!--
 - Độ khó phụ thuộc mạnh vào chế độ kiểm thử: claim khó nhất, evidence có bằng chứng dễ nhất; với GPT-4o, IMR giảm gần một nửa khi có bằng chứng.
 - Đây chính là quan sát then chốt làm cơ sở để nhóm đề xuất RAG.
+- Ánh xạ sang RAG: claim là baseline chưa có bằng chứng, evidence là trần trên khi retrieval hoàn hảo; wisdom of crowds cho thấy ngay cả evidence nhiễu cũng giúp, nên RAG thực tế nằm giữa hai mốc, tùy chất lượng retriever.
 - Bàn giao: Đến đây là hết phần cơ chế, bộ chỉ số và kết quả của paper. Mời bạn Ấn trình bày phần thực nghiệm tái hiện của nhóm và đề xuất RAG.
-[~35s]
+[~40s]
 -->
 
 ---
